@@ -254,6 +254,22 @@ def terms():
 def privacy():
     return render_template('privacy.html')
 
+@app.route('/help_centre.html')
+def privacy():
+    return render_template('help_centre.html')
+
+@app.route('/privacy_policy.html')
+def privacy():
+    return render_template('privacy_policy.html')
+
+@app.route('/terms_of_service.html')
+def privacy():
+    return render_template('terms_of_service.html')
+
+@app.route('/contact_us.html')
+def privacy():
+    return render_template('contact_us.html')
+
 # Create all tables when the app starts
 with app.app_context():
     db.create_all()
