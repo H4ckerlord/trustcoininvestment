@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+body{background:linear-gradient(135deg,#1a0533 0%,#2d1b69 50%,#11998e 100%);min-height:100vh;padding:20px}
+.wrap{max-width:540px;margin:0 auto}
+.back-btn{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;margin-bottom:16px;transition:.3s}
+.back-btn:hover{color:#fff}
+.quiz-card{background:#fff;border-radius:20px;padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.quiz-header{text-align:center;margin-bottom:24px}
+.quiz-icon{width:64px;height:64px;background:linear-gradient(135deg,#F59E0B,#EF4444);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 8px 24px rgba(245,158,11,.4);font-size:28px}
+.quiz-header h2{font-size:20px;font-weight:800}
+.quiz-header p{color:var(--gray);font-size:12px;margin-top:6px;line-height:1.6}
+/* CATEGORY CARDS */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:20px 0}
+.cat-card{border:2px solid #E5E7EB;border-radius:14px;padding:20px 12px;text-align:center;cursor:pointer;transition:all .3s}
+.cat-card:hover{border-color:var(--blue);transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,71,171,.12)}
+.cat-card.selected{border-color:var(--blue);background:#EFF6FF;box-shadow:0 0 0 3px rgba(0,71,171,.15)}
+.cat-icon{font-size:32px;margin-bottom:8px}
+.cat-name{font-weight:800;font-size:13px}
+/* QUESTION */
+.question-box{background:linear-gradient(135deg,var(--blue-dark),var(--blue));border-radius:14px;padding:20px;color:#fff;margin:16px 0}
+.q-category{font-size:10px;opacity:.7;letter-spacing:1px;margin-bottom:8px}
+.q-text{font-size:15px;font-weight:700;line-height:1.5}
+.options-grid{display:grid;gap:10px;margin:16px 0}
+.opt-btn{background:#F9FAFB;border:2px solid #E5E7EB;border-radius:10px;padding:14px 16px;text-align:left;cursor:pointer;transition:all .3s;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500}
+.opt-btn:hover{border-color:var(--blue);background:#EFF6FF}
+.opt-btn.correct{border-color:#10B981;background:#D1FAE5;color:#065F46}
+.opt-btn.wrong{border-color:#EF4444;background:#FEE2E2;color:#DC2626}
+/* WIN SCREEN */
+.win-screen{text-align:center;padding:20px 0}
+.confetti-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px}
+.prize-box{background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:3px solid #F59E0B;border-radius:16px;padding:24px;margin:16px 0}
+.prize-amount{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:#92400E}
+.prize-label{font-size:13px;color:#92400E;margin-top:4px}
+/* WRONG */
+.wrong-screen{text-align:center;padding:20px 0}
+/* CLAIM FORM */
+.claim-form{margin-top:16px}
+</style>
+{% endblock %}
+{% block body %}
+<div class="wrap">
+  <a href="/dashboard" class="back-btn"><i class="fa-solid fa-arrow-left"></i>Back to Dashboard</a>
+  <div class="quiz-card animate">
+    <!-- INTRO -->
+    <div id="introScreen">
+      <div class="quiz-header">
+        <div class="quiz-icon">🧠</div>
+        <h2>Answer & Win Amazing Prizes!</h2>
+        <p>Test your intelligence and win amazing prizes when you get the answers correct. Choose a category below to get started!</p>
+      </div>
+      <div class="cat-grid">
+        <div class="cat-card" onclick="selectCategory('mathematics')"><div class="cat-icon">🔢</div><div class="cat-name">Mathematics</div></div>
+        <div class="cat-card" onclick="selectCategory('english')"><div class="cat-icon">📝</div><div class="cat-name">English</div></div>
+        <div class="cat-card" onclick="selectCategory('general')"><div class="cat-icon">🌍</div><div class="cat-name">General Knowledge</div></div>
+      </div>
+    </div>
+
+    <!-- QUESTION SCREEN -->
+    <div id="questionScreen" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <button onclick="goBack()" style="background:#F3F4F6;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px">←</button>
+        <div style="font-weight:700;font-size:14px" id="catLabel">Mathematics</div>
+      </div>
+      <div class="question-box">
+        <div class="q-category" id="qCatLabel">MATHEMATICS QUESTION</div>
+        <div class="q-text" id="qText"></div>
+      </div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div id="feedbackMsg" style="display:none;padding:10px;border-radius:8px;font-size:13px;font-weight:600;text-align:center;margin-top:8px"></div>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="winScreen" style="display:none">
+      <div class="win-screen">
+        <div style="font-size:56px;margin-bottom:8px;animation:pulse 1s 5">🎉</div>
+        <div class="confetti-title">Congratulations! 🏆</div>
+        <p style="color:var(--gray);font-size:13px;margin-bottom:4px">You provided the correct answer and you have won a prize of:</p>
+        <div class="prize-box">
+          <div class="prize-amount" id="prizeAmount">$0.00</div>
+          <div class="prize-label">🎁 Congratulations — Your Amazing Prize!</div>
+        </div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px">To claim this prize, click the button below and fill in your details. Our team will contact you within 24 hours with the next steps.</p>
+        <button class="btn btn-gold" style="width:100%;padding:14px;font-size:15px" onclick="showClaimForm()"><i class="fa-solid fa-gift"></i> Claim Now</button>
+        <div class="claim-form" id="claimForm" style="display:none;margin-top:20px">
+          <h3 style="font-size:16px;font-weight:800;margin-bottom:14px;text-align:left">Claim Your Prize</h3>
+          <div class="form-group">
+            <label>Your Username</label>
+            <div style="position:relative"><i class="fa-solid fa-at" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray)"></i><input type="text" id="claimUsername" placeholder="Enter your username" style="padding-left:36px"/></div>
+          </div>
+          <div class="form-group">
+            <label>Active Email Address</label>
+            <div style="position:relative"><i class="fa-solid fa-envelope" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray)"></i><input type="email" id="claimEmail" placeholder="Enter email for response" style="padding-left:36px"/></div>
+          </div>
+          <div class="form-group">
+            <label>Prize Amount Won</label>
+            <input type="text" id="claimPrize" readonly style="background:#F9FAFB;font-weight:700;color:var(--blue)"/>
+          </div>
+          <div style="background:#FEF3C7;border-radius:10px;padding:12px;margin-bottom:14px">
+            <p style="font-size:12px;color:#92400E;font-weight:600">✅ Expect a response from our team within 24 working hours with further instructions on how to receive your prize.</p>
+          </div>
+          <div id="claimErr" class="error-msg"></div>
+          <div id="claimSuccess" class="success-msg"></div>
+          <button class="btn btn-blue" style="width:100%;padding:14px" onclick="submitClaim()"><i class="fa-solid fa-paper-plane"></i> Submit Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WRONG SCREEN -->
+    <div id="wrongScreen" style="display:none">
+      <div class="wrong-screen">
+        <div style="font-size:52px;margin-bottom:12px">😔</div>
+        <h3 style="font-size:18px;font-weight:800;margin-bottom:8px">Incorrect Answer</h3>
+        <p style="color:var(--gray);font-size:13px;margin-bottom:20px">That was not the correct answer. Better luck next time! The correct answer was: <strong id="correctAnswerText" style="color:var(--blue)"></strong></p>
+        <button class="btn btn-blue" style="width:100%" onclick="tryAgain()"><i class="fa-solid fa-rotate-right"></i> Try Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS={
+  mathematics:[
+    {q:"What is 12 + 8?",options:["18","20","22","15"],answer:1},
+    {q:"What is 5 × 6?",options:["25","35","30","28"],answer:2},
+    {q:"What is 100 ÷ 4?",options:["20","25","30","15"],answer:1},
+    {q:"What is 15 − 7?",options:["9","8","7","6"],answer:1},
+    {q:"What is 3² (3 squared)?",options:["6","9","12","8"],answer:1},
+    {q:"What is 50% of 200?",options:["50","150","100","75"],answer:2},
+    {q:"What is 7 × 7?",options:["42","49","56","35"],answer:1},
+    {q:"What is 144 ÷ 12?",options:["10","11","12","14"],answer:2},
+    {q:"What is 25 + 35?",options:["55","60","65","70"],answer:1},
+    {q:"How many sides does a triangle have?",options:["4","2","3","5"],answer:2},
+    {q:"What is 10% of 500?",options:["50","100","25","75"],answer:0},
+    {q:"What is 9 × 8?",options:["63","72","81","54"],answer:1},
+    {q:"What is 2 + 2 × 2?",options:["8","6","4","10"],answer:1},
+    {q:"What is 1000 − 350?",options:["750","650","550","700"],answer:1},
+    {q:"What is the square root of 64?",options:["6","7","8","9"],answer:2},
+  ],
+  english:[
+    {q:"What is the plural of 'child'?",options:["childs","childrens","children","childer"],answer:2},
+    {q:"Which word is a synonym for 'happy'?",options:["sad","angry","joyful","tired"],answer:2},
+    {q:"What is the opposite of 'begin'?",options:["continue","end","start","pause"],answer:1},
+    {q:"Which sentence is correct?",options:["I goes to school","I go to school","I goed to school","I going to school"],answer:1},
+    {q:"What part of speech is the word 'quickly'?",options:["noun","adjective","adverb","verb"],answer:2},
+    {q:"What is the past tense of 'run'?",options:["runned","running","runs","ran"],answer:3},
+    {q:"Which word means 'very big'?",options:["tiny","enormous","small","little"],answer:1},
+    {q:"What does 'synonym' mean?",options:["opposite word","same meaning word","made-up word","old word"],answer:1},
+    {q:"Which word is spelled correctly?",options:["recieve","receive","receve","recieeve"],answer:1},
+    {q:"How many vowels are in the English alphabet?",options:["4","5","6","7"],answer:1},
+    {q:"What is the singular of 'teeth'?",options:["teeths","tooth","tooths","toothes"],answer:1},
+    {q:"Which word is an adjective?",options:["run","beautiful","quickly","eat"],answer:1},
+    {q:"What punctuation ends a question?",options:[".","!","?",","],answer:2},
+    {q:"What is the past tense of 'eat'?",options:["eated","eaten","ate","eats"],answer:2},
+    {q:"Which word means 'to look at carefully'?",options:["ignore","glance","examine","avoid"],answer:2},
+  ],
+  general:[
+    {q:"What is the capital of France?",options:["London","Berlin","Paris","Madrid"],answer:2},
+    {q:"How many continents are there on Earth?",options:["5","6","7","8"],answer:2},
+    {q:"What is the largest ocean on Earth?",options:["Atlantic","Indian","Arctic","Pacific"],answer:3},
+    {q:"What color do you get when you mix red and blue?",options:["Green","Purple","Orange","Brown"],answer:1},
+    {q:"How many months are in a year?",options:["10","11","12","13"],answer:2},
+    {q:"What is the capital of the United States?",options:["New York","Washington D.C.","Los Angeles","Chicago"],answer:1},
+    {q:"How many days are in a week?",options:["5","6","7","8"],answer:2},
+    {q:"Which planet is known as the Red Planet?",options:["Venus","Jupiter","Mars","Saturn"],answer:2},
+    {q:"What is the largest animal in the world?",options:["Elephant","Blue Whale","Giraffe","Shark"],answer:1},
+    {q:"How many hours are in a day?",options:["12","18","24","20"],answer:2},
+    {q:"What is the chemical symbol for water?",options:["WA","HO","H2O","W2O"],answer:2},
+    {q:"Which country is the largest in the world?",options:["China","USA","Canada","Russia"],answer:3},
+    {q:"What is the fastest land animal?",options:["Lion","Horse","Cheetah","Leopard"],answer:2},
+    {q:"How many sides does a hexagon have?",options:["5","6","7","8"],answer:1},
+    {q:"What is the capital of Nigeria?",options:["Lagos","Kano","Abuja","Port Harcourt"],answer:2},
+  ]
+};
+
+let currentCategory='';
+let currentQuestion=null;
+let currentPrize=0;
+
+function selectCategory(cat){
+  currentCategory=cat;
+  const catNames={mathematics:'Mathematics',english:'English',general:'General Knowledge'};
+  const catLabels={mathematics:'MATHEMATICS QUESTION',english:'ENGLISH QUESTION',general:'GENERAL KNOWLEDGE QUESTION'};
+  document.getElementById('introScreen').style.display='none';
+  document.getElementById('questionScreen').style.display='block';
+  document.getElementById('catLabel').textContent=catNames[cat];
+  document.getElementById('qCatLabel').textContent=catLabels[cat];
+  const qs=QUESTIONS[cat];
+  currentQuestion=qs[Math.floor(Math.random()*qs.length)];
+  document.getElementById('qText').textContent=currentQuestion.q;
+  const grid=document.getElementById('optionsGrid');
+  grid.innerHTML='';
+  currentQuestion.options.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn';
+    btn.textContent=(String.fromCharCode(65+i)+'. '+opt);
+    btn.onclick=()=>checkAnswer(i,btn);
+    grid.appendChild(btn);
+  });
+}
+
+function checkAnswer(idx,btn){
+  const allBtns=document.querySelectorAll('.opt-btn');
+  allBtns.forEach(b=>b.onclick=null);
+  if(idx===currentQuestion.answer){
+    btn.classList.add('correct');
+    currentPrize=generatePrize();
+    setTimeout(()=>{
+      document.getElementById('questionScreen').style.display='none';
+      document.getElementById('winScreen').style.display='block';
+      document.getElementById('prizeAmount').textContent='$'+currentPrize.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      document.getElementById('claimPrize').value='$'+currentPrize.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    },800);
+  } else {
+    btn.classList.add('wrong');
+    allBtns[currentQuestion.answer].classList.add('correct');
+    setTimeout(()=>{
+      document.getElementById('questionScreen').style.display='none';
+      document.getElementById('wrongScreen').style.display='block';
+      document.getElementById('correctAnswerText').textContent=currentQuestion.options[currentQuestion.answer];
+    },1200);
+  }
+}
+
+function generatePrize(){
+  // Random prize between $2,760 and $1,000,000
+  const prizes=[2760,3500,5000,7500,10000,15000,25000,50000,75000,100000,150000,250000,500000,750000,1000000];
+  return prizes[Math.floor(Math.random()*prizes.length)];
+}
+
+function showClaimForm(){
+  document.getElementById('claimForm').style.display='block';
+}
+
+function submitClaim(){
+  const username=document.getElementById('claimUsername').value.trim();
+  const email=document.getElementById('claimEmail').value.trim();
+  const err=document.getElementById('claimErr');
+  const succ=document.getElementById('claimSuccess');
+  if(!username||!email){showError(err,'Please fill in all fields!');return;}
+  fetch('/quiz/submit-winner',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:username,email:email,prize:currentPrize,category:currentCategory})})
+  .then(r=>r.json()).then(res=>{
+    if(res.success){
+      showSuccess(succ,'✅ Claim submitted! Expect a response from our team within 24 working hours.');
+      document.querySelectorAll('.claim-form input').forEach(i=>i.disabled=true);
+      document.querySelector('.claim-form .btn-blue').disabled=true;
+    }
+  });
+}
+
+function tryAgain(){
+  document.getElementById('wrongScreen').style.display='none';
+  document.getElementById('introScreen').style.display='block';
+}
+
+function goBack(){
+  document.getElementById('questionScreen').style.display='none';
+  document.getElementById('introScreen').style.display='block';
+}
+</script>
+{% endblock %}

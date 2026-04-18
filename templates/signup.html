@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+body{background:linear-gradient(135deg,#003080 0%,#0047AB 50%,#1a7bd4 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.signup-wrap{width:100%;max-width:480px;margin:0 auto}
+.signup-card{background:#fff;border-radius:20px;padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.brand{text-align:center;margin-bottom:24px}
+.brand-icon{width:56px;height:56px;background:var(--blue);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 8px 20px rgba(0,71,171,.4)}
+.brand-icon i{color:#fff;font-size:24px}
+.brand h2{font-size:20px;font-weight:800;color:var(--text)}
+.brand p{color:var(--gray);font-size:12px;margin-top:4px}
+.progress-bar{display:flex;align-items:center;gap:0;margin-bottom:28px;justify-content:center}
+.step{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:all .3s}
+.step.active{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(0,71,171,.4)}
+.step.done{background:#10B981;color:#fff}
+.step.inactive{background:#E5E7EB;color:#9CA3AF}
+.step-line{flex:1;height:3px;background:#E5E7EB;max-width:40px;transition:background .3s}
+.step-line.done{background:#10B981}
+.input-wrap{position:relative}
+.input-wrap i.icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:14px}
+.input-wrap input,.input-wrap select{padding-left:40px}
+.back-link{text-align:center;margin-top:16px;font-size:12px;color:var(--gray)}
+.back-link a{color:var(--blue);text-decoration:none;font-weight:600}
+</style>
+{% endblock %}
+{% block body %}
+<div class="signup-wrap">
+  <div class="signup-card animate">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-coins"></i></div>
+      <h2>Sign Up to Create an Account</h2>
+      <p>Join TrustCoin and start earning returns today</p>
+    </div>
+    <div class="progress-bar">
+      <div class="step active" id="s1">1</div>
+      <div class="step-line" id="l1"></div>
+      <div class="step inactive" id="s2">2</div>
+      <div class="step-line" id="l2"></div>
+      <div class="step inactive" id="s3">3</div>
+    </div>
+    <div id="errorBox" class="error-msg"></div>
+    <form id="signupForm" onsubmit="return false">
+      <div class="form-group animate animate-delay-1">
+        <label><i class="fa-solid fa-user" style="color:var(--blue);margin-right:6px"></i>Legal Full Name</label>
+        <div class="input-wrap"><i class="icon fa-solid fa-user"></i><input type="text" id="legal_name" placeholder="Input legal names" required/></div>
+      </div>
+      <div class="form-group animate animate-delay-2">
+        <label><i class="fa-solid fa-cake-candles" style="color:var(--blue);margin-right:6px"></i>Date of Birth</label>
+        <div class="input-wrap"><i class="icon fa-solid fa-calendar"></i><input type="date" id="dob" required/></div>
+      </div>
+      <div class="form-group animate animate-delay-2">
+        <label><i class="fa-solid fa-envelope" style="color:var(--blue);margin-right:6px"></i>Active Email Address</label>
+        <div class="input-wrap"><i class="icon fa-solid fa-envelope"></i><input type="email" id="email" placeholder="Enter active email (@gmail.com)" required/></div>
+      </div>
+      <div class="form-group animate animate-delay-3">
+        <label><i class="fa-solid fa-globe" style="color:var(--blue);margin-right:6px"></i>Country of Residence</label>
+        <select id="country" required>
+          <option value="">-- Select your country --</option>
+          <option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Andorra</option><option>Angola</option><option>Antigua and Barbuda</option><option>Argentina</option><option>Armenia</option><option>Australia</option><option>Austria</option><option>Azerbaijan</option>
+          <option>Bahamas</option><option>Bahrain</option><option>Bangladesh</option><option>Barbados</option><option>Belarus</option><option>Belgium</option><option>Belize</option><option>Benin</option><option>Bhutan</option><option>Bolivia</option><option>Bosnia and Herzegovina</option><option>Botswana</option><option>Brazil</option><option>Brunei</option><option>Bulgaria</option><option>Burkina Faso</option><option>Burundi</option>
+          <option>Cabo Verde</option><option>Cambodia</option><option>Cameroon</option><option>Canada</option><option>Central African Republic</option><option>Chad</option><option>Chile</option><option>China</option><option>Colombia</option><option>Comoros</option><option>Congo (DRC)</option><option>Congo (Republic)</option><option>Costa Rica</option><option>Croatia</option><option>Cuba</option><option>Cyprus</option><option>Czech Republic</option>
+          <option>Denmark</option><option>Djibouti</option><option>Dominica</option><option>Dominican Republic</option>
+          <option>Ecuador</option><option>Egypt</option><option>El Salvador</option><option>Equatorial Guinea</option><option>Eritrea</option><option>Estonia</option><option>Eswatini</option><option>Ethiopia</option>
+          <option>Fiji</option><option>Finland</option><option>France</option>
+          <option>Gabon</option><option>Gambia</option><option>Georgia</option><option>Germany</option><option>Ghana</option><option>Greece</option><option>Grenada</option><option>Guatemala</option><option>Guinea</option><option>Guinea-Bissau</option><option>Guyana</option>
+          <option>Haiti</option><option>Honduras</option><option>Hungary</option>
+          <option>Iceland</option><option>India</option><option>Indonesia</option><option>Iran</option><option>Iraq</option><option>Ireland</option><option>Israel</option><option>Italy</option>
+          <option>Jamaica</option><option>Japan</option><option>Jordan</option>
+          <option>Kazakhstan</option><option>Kenya</option><option>Kiribati</option><option>Kuwait</option><option>Kyrgyzstan</option>
+          <option>Laos</option><option>Latvia</option><option>Lebanon</option><option>Lesotho</option><option>Liberia</option><option>Libya</option><option>Liechtenstein</option><option>Lithuania</option><option>Luxembourg</option>
+          <option>Madagascar</option><option>Malawi</option><option>Malaysia</option><option>Maldives</option><option>Mali</option><option>Malta</option><option>Marshall Islands</option><option>Mauritania</option><option>Mauritius</option><option>Mexico</option><option>Micronesia</option><option>Moldova</option><option>Monaco</option><option>Mongolia</option><option>Montenegro</option><option>Morocco</option><option>Mozambique</option><option>Myanmar</option>
+          <option>Namibia</option><option>Nauru</option><option>Nepal</option><option>Netherlands</option><option>New Zealand</option><option>Nicaragua</option><option>Niger</option><option>Nigeria</option><option>North Korea</option><option>North Macedonia</option><option>Norway</option>
+          <option>Oman</option>
+          <option>Pakistan</option><option>Palau</option><option>Palestine</option><option>Panama</option><option>Papua New Guinea</option><option>Paraguay</option><option>Peru</option><option>Philippines</option><option>Poland</option><option>Portugal</option>
+          <option>Qatar</option>
+          <option>Romania</option><option>Russia</option><option>Rwanda</option>
+          <option>Saint Kitts and Nevis</option><option>Saint Lucia</option><option>Saint Vincent and the Grenadines</option><option>Samoa</option><option>San Marino</option><option>Sao Tome and Principe</option><option>Saudi Arabia</option><option>Senegal</option><option>Serbia</option><option>Seychelles</option><option>Sierra Leone</option><option>Singapore</option><option>Slovakia</option><option>Slovenia</option><option>Solomon Islands</option><option>Somalia</option><option>South Africa</option><option>South Korea</option><option>South Sudan</option><option>Spain</option><option>Sri Lanka</option><option>Sudan</option><option>Suriname</option><option>Sweden</option><option>Switzerland</option><option>Syria</option>
+          <option>Taiwan</option><option>Tajikistan</option><option>Tanzania</option><option>Thailand</option><option>Timor-Leste</option><option>Togo</option><option>Tonga</option><option>Trinidad and Tobago</option><option>Tunisia</option><option>Turkey</option><option>Turkmenistan</option><option>Tuvalu</option>
+          <option>Uganda</option><option>Ukraine</option><option>United Arab Emirates</option><option>United Kingdom</option><option>United States</option><option>Uruguay</option><option>Uzbekistan</option>
+          <option>Vanuatu</option><option>Vatican City</option><option>Venezuela</option><option>Vietnam</option>
+          <option>Yemen</option>
+          <option>Zambia</option><option>Zimbabwe</option>
+        </select>
+      </div>
+      <div class="form-group animate animate-delay-3">
+        <label><i class="fa-solid fa-briefcase" style="color:var(--blue);margin-right:6px"></i>Employment Status</label>
+        <select id="employment" required>
+          <option value="">Select employment status</option>
+          <option>Employed</option><option>Unemployed</option><option>Student</option><option>Others</option>
+        </select>
+      </div>
+      <div class="form-group animate animate-delay-4">
+        <label><i class="fa-solid fa-circle-question" style="color:var(--blue);margin-right:6px"></i>Have You Invested Before?</label>
+        <select id="invested_btc" required>
+          <option value="">Select an option</option>
+          <option>Yes</option><option>No</option>
+        </select>
+      </div>
+      <div class="form-group animate animate-delay-4">
+        <label><i class="fa-solid fa-money-bill-wave" style="color:var(--blue);margin-right:6px"></i>Source of Income</label>
+        <div class="input-wrap"><i class="icon fa-solid fa-money-bill"></i><input type="text" id="income_source" placeholder="Input source of income" required/></div>
+      </div>
+      <button class="btn btn-blue" style="width:100%;padding:14px" onclick="continueReg()">
+        <i class="fa-solid fa-arrow-right"></i> Continue Registration
+      </button>
+    </form>
+    <div class="back-link">Already have an account? <a href="/login">Login here</a></div>
+  </div>
+</div>
+<script>
+function continueReg(){
+  const fields=['legal_name','dob','email','country','employment','invested_btc','income_source'];
+  const err=document.getElementById('errorBox');
+  for(let f of fields){if(!document.getElementById(f).value.trim()){showError(err,'KINDLY FILL ALL DETAILS!');return;}}
+  const email=document.getElementById('email').value.trim().toLowerCase();
+  if(!email.endsWith('@gmail.com')){showError(err,'Please enter a valid @gmail.com email address!');return;}
+  const data={legal_name:document.getElementById('legal_name').value.trim(),dob:document.getElementById('dob').value,email:email,country:document.getElementById('country').value,employment:document.getElementById('employment').value,invested_btc:document.getElementById('invested_btc').value,income_source:document.getElementById('income_source').value.trim()};
+  fetch('/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(r=>r.json()).then(res=>{
+    if(res.success){document.getElementById('s1').className='step done';document.getElementById('s1').innerHTML='✓';document.getElementById('l1').className='step-line done';document.getElementById('s2').className='step active';setTimeout(()=>window.location='/complete-registration',300);}
+  });
+}
+</script>
+{% endblock %}

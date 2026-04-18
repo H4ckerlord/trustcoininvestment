@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+body{background:#F0F4FF}
+.page-header{background:linear-gradient(135deg,var(--blue-dark),var(--blue));padding:40px 20px;text-align:center;color:#fff}
+.page-header h1{font-size:clamp(22px,4vw,34px);font-weight:800;margin-bottom:8px}
+.page-header p{opacity:.8;font-size:14px}
+.back-btn{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;margin-bottom:16px}
+.back-btn:hover{color:#fff}
+.content-wrap{max-width:800px;margin:0 auto;padding:32px 20px}
+.content-card{background:#fff;border-radius:var(--radius);padding:32px;box-shadow:var(--shadow)}
+.content-card h2{font-size:18px;font-weight:800;color:var(--blue);margin:24px 0 10px;border-left:4px solid var(--blue);padding-left:12px}
+.content-card h2:first-child{margin-top:0}
+.content-card p{font-size:13px;color:#374151;line-height:1.9;margin-bottom:12px}
+.content-card ul{padding-left:20px;margin-bottom:12px}
+.content-card ul li{font-size:13px;color:#374151;line-height:1.8;margin-bottom:4px}
+.updated{font-size:11px;color:var(--gray);margin-bottom:24px}
+</style>
+{% endblock %}
+{% block body %}
+<div class="page-header">
+  <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i>Back to Home</a>
+  <h1>Privacy Policy</h1>
+  <p>How TrustCoin Investment collects, uses, and protects your information</p>
+</div>
+<div class="content-wrap">
+  <div class="content-card">
+    <div class="updated">Last updated: January 1, 2024 &nbsp;|&nbsp; Effective Date: January 1, 2021</div>
+    <h2>1. Introduction</h2>
+    <p>TrustCoin Investment ("we," "us," or "our"), located at Franklin Avenue, Los Angeles, California, United States, is committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our investment platform.</p>
+    <h2>2. Information We Collect</h2>
+    <p>We collect information that you provide directly to us when you register for an account or use our services, including:</p>
+    <ul>
+      <li>Legal full name, date of birth, and national identification details</li>
+      <li>Email address and contact information</li>
+      <li>Country of residence and address details</li>
+      <li>Employment status and source of income</li>
+      <li>Financial information including investment amounts and transaction history</li>
+      <li>Device information, IP address, and usage data for security purposes</li>
+    </ul>
+    <h2>3. How We Use Your Information</h2>
+    <p>We use the information we collect to operate and improve our investment platform, process your transactions, communicate with you about your account, comply with legal and regulatory obligations, prevent fraud and ensure platform security, and provide customer support.</p>
+    <h2>4. Information Sharing and Disclosure</h2>
+    <p>TrustCoin Investment does not sell, trade, or rent your personal information to third parties. We may share your information only in the following limited circumstances: with regulatory authorities and law enforcement when required by law; with trusted service providers who assist in operating our platform under strict confidentiality agreements; and to protect the rights, property, or safety of TrustCoin Investment, our users, or the public.</p>
+    <h2>5. Data Security</h2>
+    <p>We implement bank-grade security measures including military-grade 256-bit AES encryption, secure HTTPS connections, multi-factor authentication, regular security audits, and restricted access controls to protect your personal and financial information. However, no method of internet transmission is 100% secure, and we encourage you to take steps to protect your account credentials.</p>
+    <h2>6. Your Rights</h2>
+    <p>You have the right to access, correct, update, or request deletion of your personal information. You may also opt out of marketing communications at any time. To exercise any of these rights, please contact us through our Help Center or Contact Us form.</p>
+    <h2>7. Cookies and Tracking</h2>
+    <p>We use essential cookies to maintain your session and ensure the security of our platform. We do not use advertising or tracking cookies. By using our platform, you consent to our use of essential cookies necessary for platform functionality.</p>
+    <h2>8. Children's Privacy</h2>
+    <p>TrustCoin Investment is not intended for individuals under the age of 18. We do not knowingly collect personal information from minors. If we become aware that a minor has provided us with personal information, we will delete it immediately.</p>
+    <h2>9. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new policy on this page and updating the effective date. Your continued use of our platform following any changes constitutes your acceptance of the updated policy.</p>
+    <h2>10. Contact Us</h2>
+    <p>If you have questions about this Privacy Policy, please contact us at: TrustCoin Investment, Franklin Avenue, Los Angeles, California, United States. You may also use our Help Center or Contact Us form available on our website.</p>
+  </div>
+</div>
+{% endblock %}

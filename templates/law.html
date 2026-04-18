@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+body{background:#F0F4FF}
+.page-header{background:linear-gradient(135deg,var(--blue-dark),var(--blue));padding:40px 20px;text-align:center;color:#fff}
+.page-header h1{font-size:clamp(22px,4vw,34px);font-weight:800;margin-bottom:8px}
+.page-header p{opacity:.8;font-size:14px}
+.back-btn{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;margin-bottom:16px}
+.back-btn:hover{color:#fff}
+.content-wrap{max-width:800px;margin:0 auto;padding:32px 20px}
+.law-card{background:#fff;border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);margin-bottom:16px;border-left:5px solid var(--blue)}
+.law-card h2{font-size:16px;font-weight:800;color:var(--blue);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.law-card p{font-size:13px;color:#374151;line-height:1.9}
+.law-badge{background:rgba(0,71,171,.1);color:var(--blue);padding:3px 12px;border-radius:50px;font-size:10px;font-weight:700;letter-spacing:1px}
+.address-card{background:linear-gradient(135deg,var(--blue-dark),var(--blue));border-radius:var(--radius);padding:24px;color:#fff;text-align:center;margin-bottom:24px}
+.address-card h3{font-size:16px;font-weight:800;margin-bottom:8px}
+.address-card p{opacity:.85;font-size:13px;line-height:1.7}
+</style>
+{% endblock %}
+{% block body %}
+<div class="page-header">
+  <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i>Back to Home</a>
+  <h1>Law &amp; Regulation</h1>
+  <p>The legal framework governing TrustCoin Investment operations</p>
+</div>
+<div class="content-wrap">
+  <div class="address-card animate">
+    <h3><i class="fa-solid fa-building"></i> Company Registration</h3>
+    <p>TrustCoin Investment<br/>Franklin Avenue, Los Angeles, California<br/>United States of America<br/>Established: 2021</p>
+  </div>
+
+  <div class="law-card animate">
+    <h2><i class="fa-solid fa-scale-balanced"></i> Securities Exchange Act of 1934 <span class="law-badge">FEDERAL</span></h2>
+    <p>TrustCoin Investment operates in accordance with the Securities Exchange Act of 1934, which governs securities trading and regulates investment platforms in the United States. We adhere to all reporting, disclosure, and anti-fraud provisions as required under this Act, ensuring full transparency in all investment activities.</p>
+  </div>
+
+  <div class="law-card animate animate-delay-1">
+    <h2><i class="fa-solid fa-file-contract"></i> Investment Advisers Act of 1940 <span class="law-badge">FEDERAL</span></h2>
+    <p>As an investment advisory platform, TrustCoin Investment complies with the Investment Advisers Act of 1940. This law establishes standards for investment advisers and requires that we act in the best interests of our clients at all times, maintain proper records, and provide full disclosure of all material conflicts of interest and investment risks.</p>
+  </div>
+
+  <div class="law-card animate animate-delay-1">
+    <h2><i class="fa-solid fa-shield-halved"></i> Bank Secrecy Act (BSA) &amp; Anti-Money Laundering <span class="law-badge">FEDERAL</span></h2>
+    <p>TrustCoin Investment fully complies with the Bank Secrecy Act (BSA) and all Anti-Money Laundering (AML) regulations as enforced by the Financial Crimes Enforcement Network (FinCEN). We implement robust Know Your Customer (KYC) procedures, monitor all transactions for suspicious activity, and report as required by law to prevent financial crime and money laundering through our platform.</p>
+  </div>
+
+  <div class="law-card animate animate-delay-2">
+    <h2><i class="fa-solid fa-user-check"></i> California Consumer Privacy Act (CCPA) <span class="law-badge">STATE</span></h2>
+    <p>As a company headquartered in Los Angeles, California, TrustCoin Investment fully complies with the California Consumer Privacy Act (CCPA). This gives California residents the right to know what personal data we collect, the right to request deletion of their data, the right to opt out of the sale of personal information (which we never engage in), and protection against discrimination for exercising their privacy rights.</p>
+  </div>
+
+  <div class="law-card animate animate-delay-2">
+    <h2><i class="fa-solid fa-money-bill-transfer"></i> Dodd-Frank Wall Street Reform Act <span class="law-badge">FEDERAL</span></h2>
+    <p>TrustCoin Investment operates in accordance with the Dodd-Frank Wall Street Reform and Consumer Protection Act. This landmark legislation established the Consumer Financial Protection Bureau (CFPB) and sets comprehensive standards for financial market transparency, consumer protection, and systemic risk management that we follow in all our investment operations.</p>
+  </div>
+
+  <div class="law-card animate animate-delay-3">
+    <h2><i class="fa-solid fa-lock"></i> Gramm-Leach-Bliley Act (GLBA) <span class="law-badge">FEDERAL</span></h2>
+    <p>TrustCoin Investment adheres to the Gramm-Leach-Bliley Act which requires financial institutions to explain their information-sharing practices to customers and to safeguard sensitive data. We provide clear privacy notices, offer opt-out options for data sharing, and implement strict administrative, technical, and physical safeguards to protect all investor information.</p>
+  </div>
+
+  <div class="law-card animate animate-delay-3">
+    <h2><i class="fa-solid fa-coins"></i> FinCEN Virtual Currency Guidance <span class="law-badge">FEDERAL</span></h2>
+    <p>As a platform that accepts cryptocurrency transactions, TrustCoin Investment strictly follows the Financial Crimes Enforcement Network (FinCEN) guidance on virtual currencies and digital assets. We maintain all required registration, reporting, and compliance obligations for handling digital asset transactions, ensuring full legal operation in the cryptocurrency investment space.</p>
+  </div>
+
+  <div class="law-card animate animate-delay-4">
+    <h2><i class="fa-solid fa-building-columns"></i> Los Angeles Municipal Regulations <span class="law-badge">LOCAL</span></h2>
+    <p>TrustCoin Investment complies with all applicable Los Angeles municipal business regulations, licensing requirements, and local financial services ordinances. Our operations at Franklin Avenue, Los Angeles, California are conducted in full accordance with all city and county regulations governing financial services businesses operating within the City of Los Angeles.</p>
+  </div>
+</div>
+{% endblock %}

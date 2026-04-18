@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+body{background:linear-gradient(135deg,#003080 0%,#0047AB 50%,#1a7bd4 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-wrap{width:100%;max-width:420px;margin:0 auto}
+.login-card{background:#fff;border-radius:20px;padding:36px 28px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.brand{text-align:center;margin-bottom:28px}
+.brand-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--blue),var(--blue-light));border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 12px 28px rgba(0,71,171,.4)}
+.brand-icon i{color:#fff;font-size:28px}
+.welcome-badge{display:inline-block;background:rgba(0,71,171,.08);color:var(--blue);padding:4px 16px;border-radius:50px;font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:10px}
+.input-wrap{position:relative}
+.input-wrap i.icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:14px}
+.input-wrap .eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gray);font-size:14px;padding:4px}
+.input-wrap input{padding-left:40px;padding-right:44px}
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--gray);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#E5E7EB}
+.loading-btn{position:relative;overflow:hidden}
+.loading-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transform:translateX(-100%)}
+.loading-btn.loading::after{animation:shimmer 1.5s infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+</style>
+{% endblock %}
+{% block body %}
+<div class="login-wrap">
+  <div class="login-card animate">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-coins"></i></div>
+      <div class="welcome-badge">RETURNING INVESTOR</div>
+      <h2 style="font-size:24px;font-weight:800">Welcome Back</h2>
+      <p style="color:var(--gray);font-size:13px;margin-top:6px">Kindly login to your investment dashboard</p>
+    </div>
+    <div id="errorBox" class="error-msg"></div>
+    <div class="form-group animate animate-delay-1">
+      <label><i class="fa-solid fa-at" style="color:var(--blue);margin-right:6px"></i>Username</label>
+      <div class="input-wrap">
+        <i class="icon fa-solid fa-at"></i>
+        <input type="text" id="username" placeholder="Input your username"/>
+      </div>
+    </div>
+    <div class="form-group animate animate-delay-2">
+      <label><i class="fa-solid fa-lock" style="color:var(--blue);margin-right:6px"></i>Password</label>
+      <div class="input-wrap">
+        <i class="icon fa-solid fa-lock"></i>
+        <input type="password" id="password" placeholder="Input your password"/>
+        <button class="eye-btn" type="button" onclick="togglePwd()"><i class="fa-solid fa-eye" id="eyeIcon"></i></button>
+      </div>
+    </div>
+    <button class="btn btn-blue loading-btn animate animate-delay-3" style="width:100%;padding:15px;font-size:15px;margin-top:8px" id="loginBtn" onclick="doLogin()">
+      <i class="fa-solid fa-right-to-bracket"></i> Login to Dashboard
+    </button>
+    <div class="divider">or</div>
+    <div style="text-align:center">
+      <p style="color:var(--gray);font-size:13px">Don't have an account? <a href="/signup" style="color:var(--blue);font-weight:700;text-decoration:none">Sign up here</a></p>
+      <a href="/" style="display:inline-flex;align-items:center;gap:6px;color:var(--gray);font-size:12px;text-decoration:none;margin-top:10px"><i class="fa-solid fa-house"></i>Back to Home</a>
+    </div>
+  </div>
+</div>
+<script>
+function togglePwd(){
+  const inp=document.getElementById('password');
+  const icon=document.getElementById('eyeIcon');
+  if(inp.type==='password'){inp.type='text';icon.className='fa-solid fa-eye-slash'}
+  else{inp.type='password';icon.className='fa-solid fa-eye'}
+}
+function doLogin(){
+  const u=document.getElementById('username').value.trim();
+  const p=document.getElementById('password').value;
+  const err=document.getElementById('errorBox');
+  const btn=document.getElementById('loginBtn');
+  if(!u||!p){showError(err,'KINDLY FILL ALL DETAILS!');return}
+  btn.classList.add('loading');btn.disabled=true;
+  fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
+  .then(r=>r.json()).then(res=>{
+    btn.classList.remove('loading');btn.disabled=false;
+    if(res.success){window.location='/dashboard'}
+    else{showError(err,'INVALID USERNAME OR PASSWORD')}
+  }).catch(()=>{btn.classList.remove('loading');btn.disabled=false;showError(err,'Connection error. Please try again.')});
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+</script>
+{% endblock %}

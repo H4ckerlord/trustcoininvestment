@@ -1,0 +1,577 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+body{background:#F0F4FF;min-height:100vh}
+.topbar{background:var(--blue);padding:0 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.topbar-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:52px}
+.topbar-logo{color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;display:flex;align-items:center;gap:8px}
+.topbar-logo i{color:var(--gold)}
+.user-info{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff}
+.user-name{color:#fff;font-size:12px;font-weight:600}
+.logout-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 12px;border-radius:50px;font-size:11px;cursor:pointer;transition:.3s;text-decoration:none;display:flex;align-items:center;gap:5px}
+.logout-btn:hover{background:rgba(255,255,255,.25)}
+.locked-banner{background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:14px;padding:16px 20px;margin:16px;display:flex;align-items:center;gap:12px}
+.locked-banner i{color:#D97706;font-size:20px;flex-shrink:0}
+.locked-banner p{color:#92400E;font-size:13px;font-weight:600}
+.dash-main{max-width:1100px;margin:0 auto;padding:16px}
+.balance-card{background:linear-gradient(135deg,#003080,#0047AB,#1a7bd4);border-radius:14px;padding:24px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden}
+.balance-card::before{content:'';position:absolute;right:-20px;top:-20px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.07)}
+.bal-label{font-size:11px;opacity:.75;letter-spacing:1px;margin-bottom:6px}
+.bal-amount{font-family:'Syne',sans-serif;font-size:clamp(28px,6vw,42px);font-weight:800}
+.bal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.bal-stat{background:rgba(255,255,255,.12);border-radius:10px;padding:12px}
+.bal-stat-label{font-size:10px;opacity:.7;margin-bottom:3px}
+.bal-stat-val{font-family:'Syne',sans-serif;font-weight:700;font-size:16px}
+.actions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.action-btn{background:#fff;border-radius:14px;padding:18px 10px;text-align:center;box-shadow:0 4px 24px rgba(0,71,171,.1);cursor:pointer;transition:all .3s;border:2px solid transparent;width:100%;font-family:'DM Sans',sans-serif}
+.action-btn:hover:not([disabled]){transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,71,171,.2);border-color:#0047AB}
+.action-btn[disabled]{opacity:.4;cursor:not-allowed}
+.action-btn i{font-size:24px;color:#0047AB;display:block;margin-bottom:8px}
+.action-btn span{font-size:12px;font-weight:700;color:#111;display:block}
+.section-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.portfolio-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.portfolio-card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 4px 24px rgba(0,71,171,.1)}
+.p-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:18px}
+.p-name{font-size:12px;font-weight:700;margin-bottom:3px}
+.p-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+.p-change{font-size:11px;margin-top:3px}
+.up{color:#10B981}
+.plans-table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,71,171,.1);margin-bottom:16px}
+.plans-table thead{background:#0047AB}
+.plans-table thead th{color:#fff;padding:12px 14px;font-size:12px;font-weight:700;text-align:left}
+.plans-table tbody tr{border-bottom:1px solid #F3F4F6}
+.plans-table tbody tr:hover{background:#F9FAFB}
+.plans-table tbody td{padding:12px 14px;font-size:13px}
+.roi-col{font-family:'Syne',sans-serif;font-weight:800;color:#0047AB;font-size:15px}
+.tx-list{background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,71,171,.1);overflow:hidden;margin-bottom:16px}
+.tx-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #F3F4F6}
+.tx-item:last-child{border-bottom:none}
+.tx-left{display:flex;align-items:center;gap:12px}
+.tx-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.tx-type{font-size:13px;font-weight:600}
+.tx-date{font-size:11px;color:#6B7280}
+.tx-amount{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.badge{display:inline-block;padding:2px 10px;border-radius:50px;font-size:10px;font-weight:700}
+.badge-pending{background:#FEF3C7;color:#92400E}
+.badge-approved{background:#D1FAE5;color:#065F46}
+.badge-proc{background:#DBEAFE;color:#1E40AF}
+.bonus-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:18px;background:linear-gradient(135deg,#F59E0B,#EF4444,#8B5CF6);border:none;border-radius:14px;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:24px;text-decoration:none;position:relative;overflow:hidden;animation:bonusPulse 2s ease-in-out infinite}
+@keyframes bonusPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.5)}50%{box-shadow:0 0 0 16px rgba(245,158,11,0)}}
+.bonus-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:shimmer 2s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+/* ─── MODALS ─── */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.6);
+  z-index:99999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+.modal-overlay.is-open{
+  display:flex !important;
+}
+.modal-box{
+  background:#fff;
+  border-radius:20px;
+  padding:28px 24px;
+  width:100%;
+  max-width:430px;
+  max-height:92vh;
+  overflow-y:auto;
+  position:relative;
+  box-shadow:0 24px 80px rgba(0,0,0,.4);
+  animation:fadeInUp .25s ease;
+}
+.mclose{
+  position:absolute;top:14px;right:14px;
+  width:32px;height:32px;border-radius:50%;
+  background:#F3F4F6;border:none;cursor:pointer;
+  font-size:18px;font-weight:700;color:#374151;
+  display:flex;align-items:center;justify-content:center;
+}
+.mclose:hover{background:#E5E7EB}
+.modal-box h3{font-size:18px;font-weight:800;margin-bottom:14px;padding-right:36px}
+.btc-addr-box{background:#F0F4FF;border:2px dashed #0047AB;border-radius:10px;padding:14px;word-break:break-all;font-family:monospace;font-size:12px;color:#003080;margin:12px 0;text-align:center;font-weight:700}
+.copy-addr-btn{background:#0047AB;color:#fff;border:none;padding:9px 22px;border-radius:50px;font-size:12px;cursor:pointer;font-weight:600;transition:.3s}
+.copy-addr-btn:hover{background:#003080}
+.upload-zone{border:2px dashed #D1D5DB;border-radius:10px;padding:22px 16px;text-align:center;cursor:pointer;transition:.3s;margin:10px 0}
+.upload-zone:hover,.upload-zone.has-file{border-color:#0047AB;background:#EFF6FF}
+.plan-hint{background:#EFF6FF;border-radius:8px;padding:10px 14px;font-size:13px;color:#0047AB;font-weight:600;margin-bottom:12px;display:none}
+@media(max-width:600px){
+  .portfolio-grid{grid-template-columns:1fr 1fr}
+  .plans-table{font-size:11px}
+  .plans-table th,.plans-table td{padding:8px 6px}
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-logo"><i class="fa-solid fa-coins"></i>TRUSTCOIN</div>
+    <div class="user-info">
+      <div class="avatar">{{ user.username[0].upper() }}</div>
+      <div class="user-name">{{ user.username }}</div>
+      <a href="/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+    </div>
+  </div>
+</div>
+
+{% if not user.approved %}
+<div class="locked-banner">
+  <i class="fa-solid fa-clock"></i>
+  <p>⏳ Your account is pending approval. All features will be unlocked once our team approves you — usually within 24–48 hours.</p>
+</div>
+{% endif %}
+
+<div class="dash-main">
+  <div class="balance-card animate">
+    <div class="bal-label">TOTAL PORTFOLIO VALUE</div>
+    <div class="bal-amount">$<span id="balAmount">{{ "%.2f"|format(user.balance) }}</span></div>
+    <div style="font-size:12px;opacity:.7;margin-top:4px">Your investment balance</div>
+    <div class="bal-grid">
+      <div class="bal-stat"><div class="bal-stat-label">TODAY'S PROFIT</div><div class="bal-stat-val" id="todayProfit">$0.00</div></div>
+      <div class="bal-stat"><div class="bal-stat-label">TOTAL RETURNS</div><div class="bal-stat-val" id="totalReturns">${{ "%.2f"|format(user.total_profit) }}</div></div>
+    </div>
+  </div>
+
+  <div class="section-title"><i class="fa-solid fa-bolt" style="color:#F5A623"></i>Quick Actions</div>
+  <div class="actions-grid">
+    <button class="action-btn" id="investBtn"
+      {% if not user.approved %}disabled{% endif %}
+      onclick="openModal('investOverlay')">
+      <i class="fa-solid fa-dollar-sign"></i><span>Invest</span>
+    </button>
+    <button class="action-btn" id="withdrawBtn"
+      {% if not user.approved %}disabled{% endif %}
+      onclick="openModal('withdrawOverlay')">
+      <i class="fa-solid fa-arrow-up-from-bracket"></i><span>Withdraw</span>
+    </button>
+    <button class="action-btn" onclick="window.location='/import-wallet'">
+      <i class="fa-solid fa-wallet"></i>
+      <span>{% if user.wallet_imported %}Wallet ✓{% else %}Import Wallet{% endif %}</span>
+    </button>
+  </div>
+
+  <div class="section-title"><i class="fa-solid fa-chart-pie" style="color:#0047AB"></i>My Portfolio</div>
+  <div class="portfolio-grid">
+    <div class="portfolio-card">
+      <div class="p-icon" style="background:#EFF6FF"><i class="fa-solid fa-dollar-sign" style="color:#0047AB"></i></div>
+      <div class="p-name">USD Balance</div>
+      <div class="p-val" id="portBalance">${{ "%.2f"|format(user.balance) }}</div>
+      <div class="p-change" style="color:#6B7280">Available funds</div>
+    </div>
+    <div class="portfolio-card">
+      <div class="p-icon" style="background:#F0FDF4"><i class="fa-solid fa-chart-line" style="color:#10B981"></i></div>
+      <div class="p-name">Total Profit</div>
+      <div class="p-val up" id="portProfit">${{ "%.2f"|format(user.total_profit) }}</div>
+      <div class="p-change up">All-time returns</div>
+    </div>
+    <div class="portfolio-card">
+      <div class="p-icon" style="background:#FEF3C7"><i class="fa-solid fa-star" style="color:#F59E0B"></i></div>
+      <div class="p-name">Investment Rank</div>
+      <div class="p-val" id="invRank" style="font-size:14px">Starter</div>
+      <div class="p-change" style="color:#6B7280">Current level</div>
+    </div>
+  </div>
+
+  <div class="section-title"><i class="fa-solid fa-layer-group" style="color:#0047AB"></i>Investment Plans</div>
+  <div style="overflow-x:auto;margin-bottom:16px">
+    <table class="plans-table">
+      <thead><tr><th>Plan</th><th>Investment Range</th><th>ROI</th><th>Duration</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>🌱 Starter</td><td>$100 – $999</td><td class="roi-col">5%</td><td>7 days</td></tr>
+        <tr><td>📈 Basic</td><td>$1,000 – $4,999</td><td class="roi-col">7%</td><td>14 days</td></tr>
+        <tr><td>🥈 Silver</td><td>$5,000 – $9,999</td><td class="roi-col">10%</td><td>21 days</td></tr>
+        <tr><td>🥇 Gold</td><td>$10,000 – $24,999</td><td class="roi-col">12%</td><td>28 days</td></tr>
+        <tr><td>⭐ Premium</td><td>$25,000 – $49,999</td><td class="roi-col">15%</td><td>35 days</td></tr>
+        <tr><td>💠 Platinum</td><td>$50,000 – $99,999</td><td class="roi-col">18%</td><td>42 days</td></tr>
+        <tr><td>💎 Diamond</td><td>$100,000 – $249,999</td><td class="roi-col">20%</td><td>50 days</td></tr>
+        <tr><td>👑 Elite</td><td>$250,000 – $499,999</td><td class="roi-col">22%</td><td>60 days</td></tr>
+        <tr><td>🚀 Ultimate</td><td>$500,000 – $999,999</td><td class="roi-col">25%</td><td>75 days</td></tr>
+        <tr><td>♾️ Infinite</td><td>$1,000,000+</td><td class="roi-col">30%</td><td>90 days</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title"><i class="fa-solid fa-clock-rotate-left" style="color:#0047AB"></i>Transaction History</div>
+  <div class="tx-list">
+    {% if transactions %}
+      {% for tx in transactions %}
+      <div class="tx-item">
+        <div class="tx-left">
+          <div class="tx-icon" style="background:{% if tx.tx_type=='Invest' %}#EFF6FF{% else %}#FEE2E2{% endif %}">
+            <i class="fa-solid {% if tx.tx_type=='Invest' %}fa-dollar-sign{% else %}fa-arrow-up{% endif %}"
+               style="color:{% if tx.tx_type=='Invest' %}#0047AB{% else %}#EF4444{% endif %}"></i>
+          </div>
+          <div>
+            <div class="tx-type">{{ tx.tx_type }}</div>
+            <div class="tx-date">{{ tx.created_at.strftime('%b %d, %Y  %H:%M') }}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="tx-amount" style="color:{% if tx.tx_type=='Withdraw' %}#EF4444{% else %}#10B981{% endif %}">
+            {% if tx.tx_type=='Withdraw' %}-{% else %}+{% endif %}${{ "%.2f"|format(tx.amount) }}
+          </div>
+          <span class="badge {% if tx.status=='Approved' %}badge-approved{% elif tx.status=='Processing' %}badge-proc{% else %}badge-pending{% endif %}">
+            {{ tx.status }}
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="padding:32px;text-align:center;color:#6B7280">
+        <i class="fa-solid fa-inbox" style="font-size:36px;margin-bottom:10px;color:#E5E7EB;display:block"></i>
+        No transactions yet. Start investing to see your history here.
+      </div>
+    {% endif %}
+  </div>
+
+  <a href="/quiz" class="bonus-btn">
+    🎁 &nbsp;UNLOCK AMAZING BONUS — Answer &amp; Win Up To $1,000,000! &nbsp;🎉
+  </a>
+</div>
+
+
+<!-- ═══════════ INVEST MODAL ═══════════ -->
+<div class="modal-overlay" id="investOverlay">
+  <div class="modal-box">
+    <button class="mclose" onclick="closeModal('investOverlay')">✕</button>
+
+    <!-- Step 1 -->
+    <div id="iStep1">
+      <h3><i class="fa-solid fa-dollar-sign" style="color:#0047AB;margin-right:8px"></i>Invest Now</h3>
+      <p style="font-size:13px;color:#6B7280;margin-bottom:14px">Minimum investment is <strong>$100</strong>. Enter how much you want to invest.</p>
+      <div class="plan-hint" id="planHint">
+        Your plan: <span id="planName">—</span> &nbsp;|&nbsp; ROI: <span id="planRoi">—</span> after <span id="planDays">—</span> days
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Investment Amount (USD)</label>
+        <div style="position:relative">
+          <i class="fa-solid fa-dollar-sign" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#6B7280"></i>
+          <input type="number" id="investAmt" placeholder="Enter amount e.g. 500"
+                 style="padding-left:36px;width:100%;padding:12px 12px 12px 36px;border:2px solid #E5E7EB;border-radius:8px;font-size:14px;outline:none"
+                 min="100" oninput="previewPlan()" onfocus="this.style.borderColor='#0047AB'" onblur="this.style.borderColor='#E5E7EB'"/>
+        </div>
+      </div>
+      <div id="iErr" style="background:#FEE2E2;color:#DC2626;padding:10px;border-radius:8px;font-size:13px;font-weight:600;display:none;margin-bottom:10px"></div>
+      <button onclick="proceedToPayment()"
+        style="width:100%;padding:14px;background:#0047AB;color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+        <i class="fa-solid fa-arrow-right"></i> Proceed to Payment
+      </button>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="iStep2" style="display:none">
+      <h3><i class="fa-solid fa-wallet" style="color:#0047AB;margin-right:8px"></i>Make Payment</h3>
+      <p style="font-size:12px;color:#6B7280;margin-bottom:8px">Send your investment to this Bitcoin wallet address:</p>
+      <div class="btc-addr-box" id="btcShow">{{ btc_address }}</div>
+      <button class="copy-addr-btn" onclick="doCopy()"><i class="fa-solid fa-copy"></i> Copy Address</button>
+      <div style="margin-top:18px">
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Upload Payment Evidence</label>
+        <div class="upload-zone" id="upZone" onclick="document.getElementById('proofFile').click()">
+          <i class="fa-solid fa-cloud-arrow-up" style="font-size:28px;color:#9CA3AF;display:block;margin-bottom:6px"></i>
+          <span id="upText" style="font-size:12px;color:#6B7280">Click here to upload your payment screenshot</span>
+          <input type="file" id="proofFile" style="display:none" accept="image/*,.pdf" onchange="fileSelected(this)"/>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Exact Amount You Sent (USD)</label>
+        <div style="position:relative">
+          <i class="fa-solid fa-dollar-sign" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#6B7280"></i>
+          <input type="number" id="confirmedAmt" placeholder="Enter dollar amount you sent"
+                 style="padding-left:36px;width:100%;padding:12px 12px 12px 36px;border:2px solid #E5E7EB;border-radius:8px;font-size:14px;outline:none"
+                 onfocus="this.style.borderColor='#0047AB'" onblur="this.style.borderColor='#E5E7EB'"/>
+        </div>
+      </div>
+      <div id="cErr" style="background:#FEE2E2;color:#DC2626;padding:10px;border-radius:8px;font-size:13px;font-weight:600;display:none;margin:10px 0"></div>
+      <button onclick="confirmTx()"
+        style="width:100%;padding:14px;background:#0047AB;color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:12px">
+        <i class="fa-solid fa-check-circle"></i> Confirm My Transaction
+      </button>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="iStep3" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:54px;margin-bottom:12px">✅</div>
+      <h3 style="font-size:18px;margin-bottom:8px">Transaction Submitted!</h3>
+      <p style="color:#6B7280;font-size:13px;line-height:1.8">
+        We shall confirm your transaction and <strong>update your balance within 10 minutes</strong>.
+        Your dashboard will update automatically.
+      </p>
+      <button onclick="closeModal('investOverlay')"
+        style="margin-top:16px;padding:12px 28px;background:#0047AB;color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+        Back to Dashboard
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ WITHDRAW MODAL ═══════════ -->
+<div class="modal-overlay" id="withdrawOverlay">
+  <div class="modal-box">
+    <button class="mclose" onclick="closeModal('withdrawOverlay')">✕</button>
+
+    <!-- Step 1 -->
+    <div id="wStep1">
+      <h3><i class="fa-solid fa-arrow-up-from-bracket" style="color:#0047AB;margin-right:8px"></i>Withdraw Profit</h3>
+      <p style="font-size:13px;color:#6B7280;margin-bottom:16px">Enter the amount you want to withdraw and your Bitcoin wallet address.</p>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Withdrawal Amount (USD)</label>
+        <div style="position:relative">
+          <i class="fa-solid fa-dollar-sign" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#6B7280"></i>
+          <input type="number" id="wdAmt" placeholder="Enter amount to withdraw"
+                 style="padding-left:36px;width:100%;padding:12px 12px 12px 36px;border:2px solid #E5E7EB;border-radius:8px;font-size:14px;outline:none"
+                 onfocus="this.style.borderColor='#0047AB'" onblur="this.style.borderColor='#E5E7EB'"/>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Your Bitcoin Wallet Address</label>
+        <input type="text" id="wdAddr" placeholder="Enter your wallet address to receive funds"
+               style="width:100%;padding:12px 16px;border:2px solid #E5E7EB;border-radius:8px;font-size:14px;outline:none"
+               onfocus="this.style.borderColor='#0047AB'" onblur="this.style.borderColor='#E5E7EB'"/>
+      </div>
+      <div id="wErr" style="background:#FEE2E2;color:#DC2626;padding:10px;border-radius:8px;font-size:13px;font-weight:600;display:none;margin-bottom:10px"></div>
+      <button onclick="submitWithdraw()"
+        style="width:100%;padding:14px;background:#0047AB;color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+        <i class="fa-solid fa-paper-plane"></i> Submit Withdrawal
+      </button>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="wStep2" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:54px;margin-bottom:12px">⏳</div>
+      <h3 style="font-size:18px;margin-bottom:8px">Withdrawal in Progress</h3>
+      <p style="color:#6B7280;font-size:13px;line-height:1.8">
+        Your withdrawal request has been submitted successfully and is being processed by our team.
+        You will receive your funds within <strong>24–48 hours</strong>.
+      </p>
+      <button onclick="closeModal('withdrawOverlay')"
+        style="margin-top:16px;padding:12px 28px;background:#0047AB;color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+        Back to Dashboard
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ── Plans data ── */
+const PLANS=[
+  {name:'Starter',  min:100,    max:999,    roi:5,  days:7},
+  {name:'Basic',    min:1000,   max:4999,   roi:7,  days:14},
+  {name:'Silver',   min:5000,   max:9999,   roi:10, days:21},
+  {name:'Gold',     min:10000,  max:24999,  roi:12, days:28},
+  {name:'Premium',  min:25000,  max:49999,  roi:15, days:35},
+  {name:'Platinum', min:50000,  max:99999,  roi:18, days:42},
+  {name:'Diamond',  min:100000, max:249999, roi:20, days:50},
+  {name:'Elite',    min:250000, max:499999, roi:22, days:60},
+  {name:'Ultimate', min:500000, max:999999, roi:25, days:75},
+  {name:'Infinite', min:1000000,max:1e12,   roi:30, days:90},
+];
+function getPlan(a){return PLANS.find(p=>a>=p.min&&a<=p.max)||null;}
+
+/* ── Open / close modals ── */
+function openModal(id){
+  document.getElementById(id).classList.add('is-open');
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('is-open');
+}
+
+/* Close when clicking the dark background */
+document.querySelectorAll('.modal-overlay').forEach(function(el){
+  el.addEventListener('click', function(e){
+    if(e.target === el) closeModal(el.id);
+  });
+});
+
+/* ── Plan preview while typing amount ── */
+function previewPlan(){
+  var amt = parseFloat(document.getElementById('investAmt').value)||0;
+  var plan = getPlan(amt);
+  var hint = document.getElementById('planHint');
+  if(plan && amt>=100){
+    document.getElementById('planName').textContent = plan.name;
+    document.getElementById('planRoi').textContent  = plan.roi+'%';
+    document.getElementById('planDays').textContent = plan.days;
+    hint.style.display='block';
+    document.getElementById('invRank').textContent  = plan.name;
+  } else {
+    hint.style.display='none';
+  }
+}
+
+/* ── Step 1 → Step 2 ── */
+var currentTxId = null;
+function proceedToPayment(){
+  var amt = parseFloat(document.getElementById('investAmt').value)||0;
+  var err = document.getElementById('iErr');
+  if(amt < 100){
+    err.textContent='Minimum investment amount is $100!';
+    err.style.display='block';
+    return;
+  }
+  err.style.display='none';
+  fetch('/invest',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({amount:amt})
+  })
+  .then(function(r){return r.json();})
+  .then(function(res){
+    if(res.success){
+      currentTxId = res.tx_id;
+      document.getElementById('iStep1').style.display='none';
+      document.getElementById('iStep2').style.display='block';
+    } else {
+      err.textContent='Minimum investment is $100!';
+      err.style.display='block';
+    }
+  })
+  .catch(function(){
+    err.textContent='Network error. Please try again.';
+    err.style.display='block';
+  });
+}
+
+/* ── Copy BTC address ── */
+function doCopy(){
+  var txt = document.getElementById('btcShow').textContent.trim();
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(function(){alert('✅ BTC Address copied!');});
+  } else {
+    var t=document.createElement('textarea');
+    t.value=txt;document.body.appendChild(t);t.select();
+    document.execCommand('copy');document.body.removeChild(t);
+    alert('✅ BTC Address copied!');
+  }
+}
+
+/* ── File upload handler ── */
+function fileSelected(input){
+  if(input.files && input.files[0]){
+    document.getElementById('upZone').classList.add('has-file');
+    document.getElementById('upText').textContent='✅ '+input.files[0].name;
+  }
+}
+
+/* ── Confirm transaction ── */
+function confirmTx(){
+  var amt   = parseFloat(document.getElementById('confirmedAmt').value)||0;
+  var proof = document.getElementById('proofFile').files[0];
+  var err   = document.getElementById('cErr');
+  if(!proof){
+    err.textContent='Please upload your payment screenshot first!';
+    err.style.display='block'; return;
+  }
+  if(amt < 100){
+    err.textContent='Please enter the correct amount you sent!';
+    err.style.display='block'; return;
+  }
+  err.style.display='none';
+  fetch('/confirm-investment',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({tx_id:currentTxId, amount:amt})
+  })
+  .then(function(r){return r.json();})
+  .then(function(res){
+    if(res.success){
+      document.getElementById('iStep2').style.display='none';
+      document.getElementById('iStep3').style.display='block';
+      startPolling();
+    }
+  })
+  .catch(function(){
+    err.textContent='Network error. Please try again.';
+    err.style.display='block';
+  });
+}
+
+/* ── Withdraw ── */
+function submitWithdraw(){
+  var amt  = parseFloat(document.getElementById('wdAmt').value)||0;
+  var addr = document.getElementById('wdAddr').value.trim();
+  var err  = document.getElementById('wErr');
+  if(amt < 10){
+    err.textContent='Please enter a valid withdrawal amount!';
+    err.style.display='block'; return;
+  }
+  if(!addr){
+    err.textContent='Please enter your Bitcoin wallet address!';
+    err.style.display='block'; return;
+  }
+  err.style.display='none';
+  fetch('/withdraw',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({amount:amt, address:addr})
+  })
+  .then(function(r){return r.json();})
+  .then(function(res){
+    if(res.success){
+      document.getElementById('wStep1').style.display='none';
+      document.getElementById('wStep2').style.display='block';
+    }
+  })
+  .catch(function(){
+    err.textContent='Network error. Please try again.';
+    err.style.display='block';
+  });
+}
+
+/* ── Poll every 10s for balance credit ── */
+function startPolling(){
+  var poll = setInterval(function(){
+    fetch('/check-pending')
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(res.credited){
+        clearInterval(poll);
+        var nb = parseFloat(res.new_balance).toFixed(2);
+        var np = parseFloat(res.total_profit).toFixed(2);
+        document.getElementById('balAmount').textContent   = nb;
+        document.getElementById('portBalance').textContent = '$'+nb;
+        document.getElementById('portProfit').textContent  = '$'+np;
+        document.getElementById('totalReturns').textContent= '$'+np;
+        animateProfit(parseFloat(res.new_balance)*0.002);
+      }
+    });
+  }, 10000);
+}
+
+function animateProfit(target){
+  var v=0, el=document.getElementById('todayProfit');
+  var t=setInterval(function(){
+    v += target/20;
+    el.textContent='$'+v.toFixed(2);
+    if(v>=target){el.textContent='$'+target.toFixed(2);clearInterval(t);}
+  },120);
+}
+
+/* ===== FIX FOR MOBILE TOUCH ===== */
+document.addEventListener('DOMContentLoaded', function() {
+  var investBtn = document.getElementById('investBtn');
+  var withdrawBtn = document.getElementById('withdrawBtn');
+  if(investBtn && !investBtn.disabled) {
+    investBtn.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      openModal('investOverlay');
+    });
+  }
+  if(withdrawBtn && !withdrawBtn.disabled) {
+    withdrawBtn.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      openModal('withdrawOverlay');
+    });
+  }
+});
+</script>
+{% endblock %}

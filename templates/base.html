@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TrustCoin Investment</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#0047AB;--blue-dark:#003080;--blue-light:#1565C0;
+  --gold:#F5A623;--white:#fff;--bg:#F0F4FF;--text:#111;--gray:#6B7280;
+  --card:#fff;--shadow:0 4px 24px rgba(0,71,171,.13);
+  --radius:14px;--radius-sm:8px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+h1,h2,h3,h4{font-family:'Syne',sans-serif}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 28px;border-radius:50px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;transition:all .3s;text-decoration:none}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-blue:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,71,171,.3)}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-outline{background:transparent;border:2px solid var(--blue);color:var(--blue)}
+.btn-outline:hover{background:var(--blue);color:#fff}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}
+input,select{width:100%;padding:12px 16px;border:2px solid #E5E7EB;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .3s;background:#fff}
+input:focus,select:focus{border-color:var(--blue)}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;margin-bottom:6px;font-weight:600;font-size:13px;color:#374151}
+.form-hint{font-size:11px;color:var(--gray);margin-top:4px}
+.error-msg{background:#FEE2E2;color:#DC2626;padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-align:center;display:none;margin-bottom:14px}
+.success-msg{background:#D1FAE5;color:#059669;padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-align:center;display:none;margin-bottom:14px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.animate{animation:fadeInUp .6s ease forwards}
+.animate-delay-1{animation-delay:.1s;opacity:0}
+.animate-delay-2{animation-delay:.2s;opacity:0}
+.animate-delay-3{animation-delay:.3s;opacity:0}
+.animate-delay-4{animation-delay:.4s;opacity:0}
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+{% block body %}{% endblock %}
+<script>
+function showError(el,msg){el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',4000)}
+function showSuccess(el,msg){el.textContent=msg;el.style.display='block'}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

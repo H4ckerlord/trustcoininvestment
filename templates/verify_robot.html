@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+body{background:linear-gradient(135deg,#003080 0%,#0047AB 50%,#1a7bd4 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card-wrap{width:100%;max-width:420px;margin:0 auto}
+.verify-card{background:#fff;border-radius:20px;padding:36px 28px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center}
+.robot-icon{width:80px;height:80px;background:linear-gradient(135deg,var(--blue),var(--blue-light));border-radius:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 12px 28px rgba(0,71,171,.4);animation:pulse 2s infinite}
+.robot-icon i{color:#fff;font-size:36px}
+.code-display{background:linear-gradient(135deg,var(--blue-dark),var(--blue));border-radius:14px;padding:20px;margin:20px 0;display:none}
+.code-display .code-text{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:#fff;letter-spacing:8px;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+.code-display .code-label{color:rgba(255,255,255,.7);font-size:11px;margin-top:6px}
+.timer-ring{width:64px;height:64px;margin:0 auto 12px;position:relative}
+.timer-ring svg{transform:rotate(-90deg)}
+.timer-ring circle{fill:none;stroke:#E5E7EB;stroke-width:4}
+.timer-ring .progress{stroke:var(--gold);stroke-dasharray:176;stroke-dashoffset:176;transition:stroke-dashoffset .1s}
+.timer-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--blue)}
+.input-wrap{position:relative;margin:16px 0}
+.input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray)}
+.input-wrap input{padding-left:40px;text-align:center;font-size:20px;font-weight:700;letter-spacing:6px;font-family:'Syne',sans-serif}
+.redirect-msg{background:linear-gradient(135deg,#D1FAE5,#A7F3D0);border-radius:14px;padding:20px;display:none;margin-top:16px}
+.redirect-msg p{color:#065F46;font-weight:700;font-size:15px}
+.redirect-msg .count{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:#059669}
+</style>
+{% endblock %}
+{% block body %}
+<div class="card-wrap">
+  <div class="verify-card animate">
+    <div class="robot-icon"><i class="fa-solid fa-robot"></i></div>
+    <h2 style="font-size:22px;font-weight:800;margin-bottom:8px">Verify You're Not a Robot</h2>
+    <p style="color:var(--gray);font-size:13px;line-height:1.6;margin-bottom:20px">To verify you're not a robot, click on the button below to generate a code and input the code in the box.</p>
+    <div class="progress-bar" style="justify-content:center;margin-bottom:20px;display:flex;gap:0;align-items:center">
+      <div class="step done" style="width:32px;height:32px;border-radius:50%;background:#10B981;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">✓</div>
+      <div style="flex:1;height:3px;max-width:40px;background:#10B981"></div>
+      <div class="step done" style="width:32px;height:32px;border-radius:50%;background:#10B981;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">✓</div>
+      <div style="flex:1;height:3px;max-width:40px;background:#10B981"></div>
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;box-shadow:0 4px 12px rgba(0,71,171,.4)">3</div>
+    </div>
+    <div id="errorBox" class="error-msg"></div>
+
+    <!-- Generate section -->
+    <div id="genSection">
+      <div id="countdownWrap" style="display:none">
+        <div class="timer-ring">
+          <svg viewBox="0 0 64 64" width="64" height="64">
+            <circle cx="32" cy="32" r="28"/>
+            <circle class="progress" id="timerCircle" cx="32" cy="32" r="28"/>
+          </svg>
+          <div class="timer-num" id="timerNum">3</div>
+        </div>
+        <p style="color:var(--gray);font-size:13px">Generating code...</p>
+      </div>
+      <button class="btn btn-blue" style="width:100%;padding:14px" id="genBtn" onclick="generateCode()">
+        <i class="fa-solid fa-code"></i> Generate Code
+      </button>
+    </div>
+
+    <!-- Code display -->
+    <div class="code-display" id="codeDisplay">
+      <div class="code-text" id="codeText">------</div>
+      <div class="code-label">Your verification code — enter it below</div>
+    </div>
+
+    <!-- Input section -->
+    <div id="inputSection" style="display:none">
+      <div class="input-wrap">
+        <i class="fa-solid fa-key"></i>
+        <input type="text" id="codeInput" placeholder="Input code" maxlength="6"/>
+      </div>
+      <button class="btn btn-blue" style="width:100%;padding:14px;margin-top:8px" onclick="verifyCode()">
+        <i class="fa-solid fa-check-circle"></i> Verify Me
+      </button>
+    </div>
+
+    <!-- Redirect message -->
+    <div class="redirect-msg" id="redirectMsg">
+      <p>✅ Registration Successful!</p>
+      <p style="font-size:13px;color:#065F46;margin:6px 0">Redirecting to login page in</p>
+      <div class="count" id="redirectCount">3</div>
+    </div>
+  </div>
+</div>
+<script>
+let generatedCode='';
+function generateCode(){
+  document.getElementById('genBtn').style.display='none';
+  document.getElementById('countdownWrap').style.display='block';
+  let count=3;
+  const circle=document.getElementById('timerCircle');
+  const numEl=document.getElementById('timerNum');
+  const circumference=2*Math.PI*28;
+  circle.style.strokeDasharray=circumference;
+  const interval=setInterval(()=>{
+    const progress=(3-count)/3;
+    circle.style.strokeDashoffset=circumference*(1-progress);
+    numEl.textContent=count;
+    if(count<=0){
+      clearInterval(interval);
+      document.getElementById('countdownWrap').style.display='none';
+      fetchCode();
+    }
+    count--;
+  },1000);
+}
+function fetchCode(){
+  fetch('/verify-robot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'generate'})})
+  .then(r=>r.json()).then(res=>{
+    if(res.success){
+      generatedCode=res.code;
+      document.getElementById('codeText').textContent=res.code;
+      document.getElementById('codeDisplay').style.display='block';
+      document.getElementById('inputSection').style.display='block';
+    }
+  });
+}
+function verifyCode(){
+  const input=document.getElementById('codeInput').value.trim();
+  const err=document.getElementById('errorBox');
+  fetch('/verify-robot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'verify',code:input})})
+  .then(r=>r.json()).then(res=>{
+    if(res.success){
+      document.getElementById('inputSection').style.display='none';
+      document.getElementById('codeDisplay').style.display='none';
+      document.getElementById('redirectMsg').style.display='block';
+      let c=3;
+      const el=document.getElementById('redirectCount');
+      const t=setInterval(()=>{
+        el.textContent=c;
+        if(c<=0){clearInterval(t);window.location='/login'}
+        c--;
+      },1000);
+    } else {
+      showError(err,'INVALID CODE');
+    }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+header{background:var(--blue);padding:0 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:62px}
+.logo{color:#fff;font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
+.logo i{color:var(--gold);font-size:18px;flex-shrink:0}
+.logo-text{display:flex;flex-direction:column;line-height:1.1}
+.logo-title{font-size:13px;font-weight:800;letter-spacing:.8px}
+.logo-sub{font-size:9px;font-weight:400;color:rgba(255,255,255,.8);letter-spacing:2.5px;font-family:'DM Sans',sans-serif;font-style:italic;margin-top:2px;text-align:center}
+.nav-links{display:flex;gap:4px}
+.nav-links a{color:rgba(255,255,255,.85);text-decoration:none;font-size:12px;font-weight:500;padding:6px 10px;border-radius:50px;transition:all .3s}
+.nav-links a:hover{background:rgba(255,255,255,.15);color:#fff}
+.hero{background:linear-gradient(135deg,var(--blue-dark) 0%,var(--blue) 60%,#1a7bd4 100%);padding:60px 20px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E")}
+.hero-badge{display:inline-block;background:rgba(245,166,35,.2);border:1px solid var(--gold);color:var(--gold);padding:5px 16px;border-radius:50px;font-size:11px;font-weight:600;margin-bottom:16px;letter-spacing:1px}
+.hero h1{color:#fff;font-size:clamp(22px,5vw,42px);font-weight:800;line-height:1.2;margin-bottom:16px}
+.hero h1 span{color:var(--gold)}
+.hero p{color:rgba(255,255,255,.85);font-size:clamp(13px,3vw,16px);max-width:600px;margin:0 auto 28px;line-height:1.8}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hero-stats{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:40px;padding-top:28px;border-top:1px solid rgba(255,255,255,.15)}
+.stat{text-align:center}
+.stat-num{font-family:'Syne',sans-serif;font-size:clamp(20px,4vw,32px);font-weight:800;color:var(--gold)}
+.stat-label{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+.plans-preview{background:#fff;padding:56px 20px}
+.plans-inner{max-width:1100px;margin:0 auto}
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:28px}
+.plan-card{border-radius:14px;padding:20px 14px;text-align:center;border:2px solid #E5E7EB;transition:all .3s}
+.plan-card:hover{border-color:var(--blue);transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,71,171,.12)}
+.plan-emoji{font-size:28px;margin-bottom:8px}
+.plan-name{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;margin-bottom:4px}
+.plan-range{color:var(--gray);font-size:11px;margin-bottom:8px}
+.plan-roi{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--blue)}
+.plan-days{font-size:11px;color:var(--gray);margin-top:3px}
+.section{padding:56px 20px;max-width:1100px;margin:0 auto}
+.section-tag{display:inline-block;background:rgba(0,71,171,.1);color:var(--blue);padding:4px 14px;border-radius:50px;font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:10px}
+.section h2{font-size:clamp(20px,4vw,32px);font-weight:800;margin-bottom:12px}
+.section p{color:var(--gray);line-height:1.8;font-size:14px}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:32px}
+.about-card{background:#fff;border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border-left:4px solid var(--blue);transition:transform .3s}
+.about-card:hover{transform:translateY(-4px)}
+.about-card i{color:var(--blue);font-size:22px;margin-bottom:10px}
+.about-card h4{font-size:14px;font-weight:700;margin-bottom:6px}
+.about-card p{font-size:12px;color:var(--gray)}
+.cta-box{background:linear-gradient(135deg,var(--blue),var(--blue-light));border-radius:var(--radius);padding:36px 24px;text-align:center;color:#fff;margin:0 20px 40px}
+.cta-box h2{font-size:clamp(18px,4vw,28px);margin-bottom:10px}
+.cta-box p{opacity:.85;font-size:13px;margin-bottom:22px}
+.testi-section{background:var(--blue-dark);padding:56px 0;overflow:hidden}
+.testi-section .inner{max-width:1100px;margin:0 auto;padding:0 20px}
+.testi-section h2{color:#fff;text-align:center;font-size:clamp(20px,4vw,30px);margin-bottom:8px}
+.testi-section .sub{color:rgba(255,255,255,.7);text-align:center;font-size:13px;margin-bottom:36px}
+.testi-track{display:flex;gap:16px;animation:scrollLeft 70s linear infinite;width:max-content}
+.testi-track:hover{animation-play-state:paused}
+@keyframes scrollLeft{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.testi-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:20px;width:230px;flex-shrink:0}
+.testi-name{color:#fff;font-weight:700;font-size:13px;margin-bottom:2px}
+.testi-country{color:var(--gold);font-size:11px;margin-bottom:8px}
+.testi-text{color:rgba(255,255,255,.75);font-size:12px;line-height:1.6}
+.stars{color:var(--gold);font-size:11px;margin-bottom:6px}
+footer{background:var(--blue-dark);padding:32px 20px 20px;color:#fff}
+.footer-inner{max-width:1100px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-bottom:24px}
+.footer-col h4{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--gold)}
+.footer-col a{display:block;color:rgba(255,255,255,.7);text-decoration:none;font-size:12px;margin-bottom:8px;transition:color .3s}
+.footer-col a:hover{color:#fff}
+.footer-col p{color:rgba(255,255,255,.6);font-size:12px;line-height:1.7}
+.footer-copy{border-top:1px solid rgba(255,255,255,.1);padding-top:16px;text-align:center;color:rgba(255,255,255,.5);font-size:11px}
+@media(max-width:600px){.about-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr}.nav-links{display:none}}
+</style>
+{% endblock %}
+{% block body %}
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <i class="fa-solid fa-coins"></i>
+      <div class="logo-text">
+        <span class="logo-title">TRUSTCOIN INVESTMENT</span>
+        <span class="logo-sub">YOUR PATH TO FINANCIAL FREEDOM</span>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="#home">Home</a><a href="#about">About Us</a><a href="#plans">Plans</a>
+      <a href="#signup-sec">Sign Up</a><a href="#login-sec">Login</a><a href="#testimonies">Testimonies</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="home">
+  <div class="hero-badge animate">🏆 TRUSTED SINCE 2021</div>
+  <h1 class="animate animate-delay-1">Welcome to <span>TrustCoin</span><br/>Investment Platform</h1>
+  <p class="animate animate-delay-2">You've made a perfect choice by choosing to invest with us. Join thousands of investors earning consistent, guaranteed percentage returns on every investment. Your money works for you — every single day, every single plan.</p>
+  <div class="hero-btns animate animate-delay-3">
+    <a href="/signup" class="btn btn-gold"><i class="fa-solid fa-rocket"></i>Start Earning Returns</a>
+    <a href="#plans" class="btn btn-outline" style="border-color:rgba(255,255,255,.5);color:#fff">View Investment Plans</a>
+  </div>
+  <div class="hero-stats animate animate-delay-4">
+    <div class="stat"><div class="stat-num">12,000+</div><div class="stat-label">Active Investors</div></div>
+    <div class="stat"><div class="stat-num">$48M+</div><div class="stat-label">Total Returns Paid</div></div>
+    <div class="stat"><div class="stat-num">30%</div><div class="stat-label">Maximum ROI</div></div>
+    <div class="stat"><div class="stat-num">4 Yrs</div><div class="stat-label">In Operation</div></div>
+  </div>
+</section>
+
+<div class="plans-preview" id="plans">
+  <div class="plans-inner">
+    <div style="text-align:center"><div class="section-tag">INVESTMENT PLANS</div></div>
+    <h2 style="text-align:center;font-size:clamp(20px,4vw,30px);margin-top:8px">Earn Guaranteed Percentage Returns</h2>
+    <p style="text-align:center;max-width:580px;margin:8px auto 0;color:var(--gray);font-size:13px">Choose the plan that suits your budget and watch your money grow with guaranteed returns paid directly to your account.</p>
+    <div class="plans-grid">
+      <div class="plan-card animate animate-delay-1"><div class="plan-emoji">🌱</div><div class="plan-name">Starter</div><div class="plan-range">$100 – $999</div><div class="plan-roi">5% ROI</div><div class="plan-days">After 7 days</div></div>
+      <div class="plan-card animate animate-delay-1"><div class="plan-emoji">📈</div><div class="plan-name">Basic</div><div class="plan-range">$1,000 – $4,999</div><div class="plan-roi">7% ROI</div><div class="plan-days">After 14 days</div></div>
+      <div class="plan-card animate animate-delay-2"><div class="plan-emoji">🥈</div><div class="plan-name">Silver</div><div class="plan-range">$5,000 – $9,999</div><div class="plan-roi">10% ROI</div><div class="plan-days">After 21 days</div></div>
+      <div class="plan-card animate animate-delay-2"><div class="plan-emoji">🥇</div><div class="plan-name">Gold</div><div class="plan-range">$10,000 – $24,999</div><div class="plan-roi">12% ROI</div><div class="plan-days">After 28 days</div></div>
+      <div class="plan-card animate animate-delay-3"><div class="plan-emoji">⭐</div><div class="plan-name">Premium</div><div class="plan-range">$25,000 – $49,999</div><div class="plan-roi">15% ROI</div><div class="plan-days">After 35 days</div></div>
+      <div class="plan-card animate animate-delay-3"><div class="plan-emoji">💎</div><div class="plan-name">Diamond</div><div class="plan-range">$100,000 – $249,999</div><div class="plan-roi">20% ROI</div><div class="plan-days">After 50 days</div></div>
+    </div>
+    <div style="text-align:center;margin-top:24px"><a href="/signup" class="btn btn-blue"><i class="fa-solid fa-arrow-right"></i>Sign Up to Invest Now</a></div>
+  </div>
+</div>
+
+<section class="section" id="about">
+  <div class="animate">
+    <div class="section-tag">ABOUT US</div>
+    <h2>Building Generational Wealth Since 2021</h2>
+    <p>TrustCoin Investment has been in existence since 2021 and we help people build generational wealth through smart, diversified investments with guaranteed percentage returns. Our expert team of certified financial analysts work tirelessly to deliver consistent, above-market returns to every investor. We specialize in high-yield investment portfolios, compound interest strategies, and diversified asset management — giving you the power to grow your wealth steadily and securely. Whether you are a first-time investor or an experienced one, TrustCoin provides the perfect platform to multiply your money.</p>
+  </div>
+  <div class="about-grid">
+    <div class="about-card animate animate-delay-1"><i class="fa-solid fa-shield-halved"></i><h4>Bank-Grade Security</h4><p>Your investments are protected by military-grade encryption and multi-layer security protocols at all times.</p></div>
+    <div class="about-card animate animate-delay-2"><i class="fa-solid fa-chart-line"></i><h4>Expert Portfolio Management</h4><p>Our certified financial experts manage every portfolio 24/7 to maximize percentage returns and minimize risk.</p></div>
+    <div class="about-card animate animate-delay-3"><i class="fa-solid fa-globe"></i><h4>Global Network</h4><p>We operate in over 50 countries, giving our investors access to global high-yield investment opportunities.</p></div>
+    <div class="about-card animate animate-delay-4"><i class="fa-solid fa-hand-holding-dollar"></i><h4>Guaranteed Returns</h4><p>Our proven strategies have delivered consistent, guaranteed percentage returns to all investors since inception.</p></div>
+  </div>
+</section>
+
+<div class="cta-box animate" id="signup-sec">
+  <h2>Sign Up With Us</h2>
+  <p>To start earning percentage returns with us, kindly click the signup button below to create your investment account. It only takes 2 minutes and your financial journey begins immediately.</p>
+  <a href="/signup" class="btn btn-gold"><i class="fa-solid fa-user-plus"></i>Sign Up Now — It's Free</a>
+</div>
+
+<div style="background:#fff;border-radius:var(--radius);padding:36px 24px;text-align:center;margin:0 20px 40px;box-shadow:var(--shadow)" id="login-sec">
+  <div class="section-tag">RETURNING INVESTOR</div>
+  <h2 style="font-size:clamp(18px,4vw,28px);margin:10px 0">Login to Your Dashboard</h2>
+  <p style="color:var(--gray);font-size:13px;margin-bottom:22px">To access your investment dashboard and track your returns, kindly click the button below.</p>
+  <a href="/login" class="btn btn-blue"><i class="fa-solid fa-right-to-bracket"></i>Login to Dashboard</a>
+</div>
+
+<section class="testi-section" id="testimonies">
+  <div class="inner">
+    <div class="section-tag" style="background:rgba(245,166,35,.2);color:var(--gold)">TESTIMONIALS</div>
+    <h2>Investors & Their Testimonies</h2>
+    <p class="sub">Real stories from real investors earning real returns around the world</p>
+  </div>
+  <div style="overflow:hidden;width:100%"><div class="testi-track" id="testiTrack"></div></div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4><i class="fa-solid fa-coins"></i> TrustCoin Investment</h4>
+        <p>Building generational wealth through smart, high-yield investments and guaranteed percentage returns since 2021.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <a href="#home">Home</a><a href="#about">About Us</a>
+        <a href="/signup">Sign Up</a><a href="/login">Login</a>
+        <a href="/faqs">FAQs</a><a href="/law">Law &amp; Regulation</a>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <a href="/help-center">Help Center</a>
+        <a href="/privacy-policy">Privacy Policy</a>
+        <a href="/terms-of-service">Terms of Service</a>
+        <a href="/contact-us">Contact Us</a>
+      </div>
+    </div>
+    <div class="footer-copy">Copyright &copy; 2021. TRUSTCOIN INVESTMENT. All Rights Reserved.</div>
+  </div>
+</footer>
+<script>
+const testimonials=[
+  {name:"James Anderson",country:"🇺🇸 United States",text:"I invested $5,000 and received massive returns. TrustCoin's percentage returns are incredible!",avatar:"JA"},
+  {name:"Sarah Mitchell",country:"🇬🇧 United Kingdom",text:"Best investment decision ever. My portfolio has grown by 340% since joining TrustCoin!",avatar:"SM"},
+  {name:"Robert Williams",country:"🇺🇸 United States",text:"The percentage returns are unbelievable. I recommend TrustCoin to all my friends!",avatar:"RW"},
+  {name:"Emma Thompson",country:"🇬🇧 United Kingdom",text:"Professional, transparent and profitable. TrustCoin changed my financial life forever.",avatar:"ET"},
+  {name:"Michael Johnson",country:"🇨🇦 Canada",text:"Started with $2,000 and now I have over $18,000 in my portfolio. Returns just keep coming!",avatar:"MJ"},
+  {name:"Olivia Davis",country:"🇦🇺 Australia",text:"TrustCoin delivered beyond my expectations. Truly amazing guaranteed returns!",avatar:"OD"},
+  {name:"William Brown",country:"🇺🇸 United States",text:"The expert team manages my investments perfectly. I wake up to returns every day!",avatar:"WB"},
+  {name:"Sophia Wilson",country:"🇨🇦 Canada",text:"TrustCoin gave me financial freedom. I quit my 9-5 after 6 months of investing here.",avatar:"SW"},
+  {name:"David Martinez",country:"🇺🇸 United States",text:"My investment has tripled in value. The withdrawal process is super fast and reliable.",avatar:"DM"},
+  {name:"Isabella Moore",country:"🇬🇧 United Kingdom",text:"TrustCoin is by far the best investment platform I've used. Consistent guaranteed returns!",avatar:"IM"},
+  {name:"Daniel Taylor",country:"🇦🇺 Australia",text:"The security features give me total peace of mind. My money grows safely every day.",avatar:"DT"},
+  {name:"Charlotte Harris",country:"🇳🇿 New Zealand",text:"Invested my savings and doubled it in 2 months. TrustCoin is genuinely life-changing!",avatar:"CH"},
+  {name:"Joshua Clark",country:"🇺🇸 United States",text:"Massive percentage returns and a world-class support team. Highly recommend TrustCoin!",avatar:"JC"},
+  {name:"Amelia Lewis",country:"🇬🇧 United Kingdom",text:"My family's financial future is secured because of TrustCoin. Best decision of my life!",avatar:"AL"},
+  {name:"Ethan Walker",country:"🇨🇦 Canada",text:"Made over $30,000 in returns this year. TrustCoin's investment strategies are unmatched!",avatar:"EW"},
+  {name:"Mia Robinson",country:"🇦🇺 Australia",text:"The compound returns made me financially free. TrustCoin truly works wonders!",avatar:"MR"},
+  {name:"Alexander Young",country:"🇺🇸 United States",text:"From $1,000 to $12,000 in 4 months through percentage returns. Simply amazing!",avatar:"AY"},
+  {name:"Emily King",country:"🇬🇧 United Kingdom",text:"The investment plans are flexible and returns are consistently high. Absolutely love it!",avatar:"EK"},
+  {name:"Benjamin Scott",country:"🇨🇦 Canada",text:"Professional team, secure platform and life-changing returns. TrustCoin is the future!",avatar:"BS"},
+  {name:"Harper Green",country:"🇺🇸 United States",text:"I paid off all my debts and saved for my kids' education thanks to TrustCoin returns!",avatar:"HG"},
+  {name:"Liam Nelson",country:"🇦🇺 Australia",text:"Every withdrawal came through instantly. Trustworthy and highly profitable platform!",avatar:"LN"},
+  {name:"Evelyn Carter",country:"🇬🇧 United Kingdom",text:"My retirement fund grew 5x in one year with TrustCoin. Wish I found them sooner!",avatar:"EC"},
+  {name:"Noah Phillips",country:"🇺🇸 United States",text:"The investment strategy here is genius. I've made more than my annual salary in returns!",avatar:"NP"},
+  {name:"Abigail Evans",country:"🇨🇦 Canada",text:"TrustCoin's team is available 24/7 and the percentage returns are life-changing. Top tier!",avatar:"AE"},
+  {name:"Mason Turner",country:"🇳🇿 New Zealand",text:"Invested $10,000 and made $65,000 in 6 months through returns. Life completely changed!",avatar:"MT"},
+];
+const colors=['#0047AB','#1565C0','#003080','#1a7bd4','#0066cc'];
+function initTestimonials(){
+  const track=document.getElementById('testiTrack');
+  [...testimonials,...testimonials].forEach(t=>{
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    const card=document.createElement('div');card.className='testi-card';
+    card.innerHTML=`<div style="width:52px;height:52px;border-radius:50%;background:${col};border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;margin-bottom:10px">${t.avatar}</div><div class="testi-name">${t.name}</div><div class="testi-country">${t.country}</div><div class="stars">★★★★★</div><div class="testi-text">"${t.text}"</div>`;
+    track.appendChild(card);
+  });
+}
+initTestimonials();
+document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth'});});});
+new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('animate');});},{threshold:.1}).observe(document.querySelector('.about-grid')||document.body);
+</script>
+{% endblock %}
