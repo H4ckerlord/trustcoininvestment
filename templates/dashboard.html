@@ -135,7 +135,7 @@ body{background:#F0F4FF;min-height:100vh}
     <div style="font-size:12px;opacity:.7;margin-top:4px">Your investment balance</div>
     <div class="bal-grid">
       <div class="bal-stat"><div class="bal-stat-label">TODAY'S PROFIT</div><div class="bal-stat-val" id="todayProfit">$0.00</div></div>
-      <div class="bal-stat"><div class="bal-stat-label">TOTAL RETURNS</div><div class="bal-stat-val" id="totalReturns">${{ "%.2f"|format(user.total_profit) }}</div></div>
+      <div class="bal-stat"><div class="bal-stat-label">TOTAL RETURNS</div><div class="bal-stat-val" id="totalReturns">$0.00</div></div>
     </div>
   </div>
 
@@ -242,8 +242,6 @@ body{background:#F0F4FF;min-height:100vh}
 <div class="modal-overlay" id="investOverlay">
   <div class="modal-box">
     <button class="mclose" onclick="closeModal('investOverlay')">✕</button>
-
-    <!-- Step 1 -->
     <div id="iStep1">
       <h3><i class="fa-solid fa-dollar-sign" style="color:#0047AB;margin-right:8px"></i>Invest Now</h3>
       <p style="font-size:13px;color:#6B7280;margin-bottom:14px">Minimum investment is <strong>$100</strong>. Enter how much you want to invest.</p>
@@ -265,8 +263,6 @@ body{background:#F0F4FF;min-height:100vh}
         <i class="fa-solid fa-arrow-right"></i> Proceed to Payment
       </button>
     </div>
-
-    <!-- Step 2 -->
     <div id="iStep2" style="display:none">
       <h3><i class="fa-solid fa-wallet" style="color:#0047AB;margin-right:8px"></i>Make Payment</h3>
       <p style="font-size:12px;color:#6B7280;margin-bottom:8px">Send your investment to this Bitcoin wallet address:</p>
@@ -295,8 +291,6 @@ body{background:#F0F4FF;min-height:100vh}
         <i class="fa-solid fa-check-circle"></i> Confirm My Transaction
       </button>
     </div>
-
-    <!-- Step 3 -->
     <div id="iStep3" style="display:none;text-align:center;padding:20px 0">
       <div style="font-size:54px;margin-bottom:12px">✅</div>
       <h3 style="font-size:18px;margin-bottom:8px">Transaction Submitted!</h3>
@@ -312,13 +306,10 @@ body{background:#F0F4FF;min-height:100vh}
   </div>
 </div>
 
-
 <!-- ═══════════ WITHDRAW MODAL ═══════════ -->
 <div class="modal-overlay" id="withdrawOverlay">
   <div class="modal-box">
     <button class="mclose" onclick="closeModal('withdrawOverlay')">✕</button>
-
-    <!-- Step 1 -->
     <div id="wStep1">
       <h3><i class="fa-solid fa-arrow-up-from-bracket" style="color:#0047AB;margin-right:8px"></i>Withdraw Profit</h3>
       <p style="font-size:13px;color:#6B7280;margin-bottom:16px">Enter the amount you want to withdraw and your Bitcoin wallet address.</p>
@@ -343,8 +334,6 @@ body{background:#F0F4FF;min-height:100vh}
         <i class="fa-solid fa-paper-plane"></i> Submit Withdrawal
       </button>
     </div>
-
-    <!-- Step 2 -->
     <div id="wStep2" style="display:none;text-align:center;padding:20px 0">
       <div style="font-size:54px;margin-bottom:12px">⏳</div>
       <h3 style="font-size:18px;margin-bottom:8px">Withdrawal in Progress</h3>
@@ -359,7 +348,6 @@ body{background:#F0F4FF;min-height:100vh}
     </div>
   </div>
 </div>
-
 
 <script>
 /* ── Plans data ── */
@@ -377,22 +365,18 @@ const PLANS=[
 ];
 function getPlan(a){return PLANS.find(p=>a>=p.min&&a<=p.max)||null;}
 
-/* ── Open / close modals ── */
 function openModal(id){
   document.getElementById(id).classList.add('is-open');
 }
 function closeModal(id){
   document.getElementById(id).classList.remove('is-open');
 }
-
-/* Close when clicking the dark background */
 document.querySelectorAll('.modal-overlay').forEach(function(el){
   el.addEventListener('click', function(e){
     if(e.target === el) closeModal(el.id);
   });
 });
 
-/* ── Plan preview while typing amount ── */
 function previewPlan(){
   var amt = parseFloat(document.getElementById('investAmt').value)||0;
   var plan = getPlan(amt);
@@ -408,7 +392,6 @@ function previewPlan(){
   }
 }
 
-/* ── Step 1 → Step 2 ── */
 var currentTxId = null;
 function proceedToPayment(){
   var amt = parseFloat(document.getElementById('investAmt').value)||0;
@@ -441,7 +424,6 @@ function proceedToPayment(){
   });
 }
 
-/* ── Copy BTC address ── */
 function doCopy(){
   var txt = document.getElementById('btcShow').textContent.trim();
   if(navigator.clipboard){
@@ -454,7 +436,6 @@ function doCopy(){
   }
 }
 
-/* ── File upload handler ── */
 function fileSelected(input){
   if(input.files && input.files[0]){
     document.getElementById('upZone').classList.add('has-file');
@@ -462,7 +443,6 @@ function fileSelected(input){
   }
 }
 
-/* ── Confirm transaction ── */
 function confirmTx(){
   var amt   = parseFloat(document.getElementById('confirmedAmt').value)||0;
   var proof = document.getElementById('proofFile').files[0];
@@ -495,7 +475,6 @@ function confirmTx(){
   });
 }
 
-/* ── Withdraw ── */
 function submitWithdraw(){
   var amt  = parseFloat(document.getElementById('wdAmt').value)||0;
   var addr = document.getElementById('wdAddr').value.trim();
@@ -527,7 +506,6 @@ function submitWithdraw(){
   });
 }
 
-/* ── Poll every 10s for balance credit ── */
 function startPolling(){
   var poll = setInterval(function(){
     fetch('/check-pending')
@@ -537,11 +515,13 @@ function startPolling(){
         clearInterval(poll);
         var nb = parseFloat(res.new_balance).toFixed(2);
         var np = parseFloat(res.total_profit).toFixed(2);
+        var tp = parseFloat(res.today_profit).toFixed(2);
         document.getElementById('balAmount').textContent   = nb;
         document.getElementById('portBalance').textContent = '$'+nb;
         document.getElementById('portProfit').textContent  = '$'+np;
         document.getElementById('totalReturns').textContent= '$'+np;
-        animateProfit(parseFloat(res.new_balance)*0.002);
+        document.getElementById('todayProfit').textContent = '$'+tp;
+        animateProfit(tp);
       }
     });
   }, 10000);
@@ -556,7 +536,6 @@ function animateProfit(target){
   },120);
 }
 
-/* ===== FIX FOR MOBILE TOUCH ===== */
 document.addEventListener('DOMContentLoaded', function() {
   var investBtn = document.getElementById('investBtn');
   var withdrawBtn = document.getElementById('withdrawBtn');
@@ -572,6 +551,12 @@ document.addEventListener('DOMContentLoaded', function() {
       openModal('withdrawOverlay');
     });
   }
+  // Set initial today profit and total returns from server
+  var todayProfit = {{ today_profit|default(0) }};
+  var totalReturns = {{ total_returns|default(0) }};
+  document.getElementById('todayProfit').textContent = '$'+todayProfit.toFixed(2);
+  document.getElementById('totalReturns').textContent = '$'+totalReturns.toFixed(2);
+  document.getElementById('portProfit').textContent = '$'+totalReturns.toFixed(2);
 });
 </script>
 {% endblock %}

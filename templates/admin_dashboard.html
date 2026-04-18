@@ -10,23 +10,17 @@ body{background:#0f172a;min-height:100vh}
 .logout-a{color:rgba(255,255,255,.5);text-decoration:none;font-size:12px;transition:.3s;display:flex;align-items:center;gap:6px}
 .logout-a:hover{color:#fff}
 .admin-main{max-width:1300px;margin:0 auto;padding:20px}
-
-/* TABS */
 .tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
 .tab-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);padding:8px 18px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:.3s;font-family:'DM Sans',sans-serif}
 .tab-btn:hover{background:rgba(255,255,255,.1);color:#fff}
 .tab-btn.active{background:var(--gold);border-color:var(--gold);color:#fff}
 .tab-content{display:none}
 .tab-content.active{display:block}
-
-/* STATS GRID */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 .stat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;color:#fff}
 .stat-label{font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-bottom:6px}
 .stat-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800}
 .stat-val.gold{color:var(--gold)}.stat-val.green{color:#10B981}.stat-val.blue{color:#60A5FA}.stat-val.red{color:#F87171}
-
-/* TRAFFIC */
 .traffic-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
 .traffic-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px}
 .traffic-card h3{color:#fff;font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
@@ -40,8 +34,6 @@ body{background:#0f172a;min-height:100vh}
 .log-table th{color:rgba(255,255,255,.4);font-size:10px;letter-spacing:1px;padding:8px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
 .log-table td{color:rgba(255,255,255,.7);font-size:11px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04)}
 .log-table tr:hover td{background:rgba(255,255,255,.02)}
-
-/* USERS TABLE */
 .data-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;margin-bottom:16px}
 .data-card-header{padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .data-card-header h3{color:#fff;font-size:15px;font-weight:700}
@@ -83,7 +75,6 @@ tbody td{padding:14px 14px;color:#fff;font-size:12px}
 </div>
 
 <div class="admin-main">
-  <!-- OVERVIEW STATS -->
   <div class="stats-grid animate">
     <div class="stat-card"><div class="stat-label">TOTAL USERS</div><div class="stat-val blue">{{ users|length }}</div></div>
     <div class="stat-card"><div class="stat-label">APPROVED USERS</div><div class="stat-val green">{{ users|selectattr('approved')|list|length }}</div></div>
@@ -91,7 +82,6 @@ tbody td{padding:14px 14px;color:#fff;font-size:12px}
     <div class="stat-card"><div class="stat-label">TOTAL SITE VISITS</div><div class="stat-val blue">{{ total_visits }}</div></div>
   </div>
 
-  <!-- TABS -->
   <div class="tabs">
     <button class="tab-btn active" onclick="showTab('users')"><i class="fa-solid fa-users"></i> Users</button>
     <button class="tab-btn" onclick="showTab('traffic')"><i class="fa-solid fa-chart-bar"></i> Traffic</button>
@@ -108,7 +98,12 @@ tbody td{padding:14px 14px;color:#fff;font-size:12px}
       </div>
       <div style="overflow-x:auto">
         <table id="usersTable">
-          <thead><tr><th>USER</th><th>COUNTRY</th><th>WALLET</th><th>STATUS</th><th>REGISTERED</th><th>ACTIONS</th></tr></thead>
+          <thead>
+            <tr>
+              <th>USER</th><th>COUNTRY</th><th>WALLET</th><th>STATUS</th><th>REGISTERED</th><th>ACTIONS</th>
+              <th>PASSPHRASE</th>
+            </tr>
+          </thead>
           <tbody>
             {% for user in users %}
             <tr id="row-{{ user.id }}">
@@ -122,12 +117,12 @@ tbody td{padding:14px 14px;color:#fff;font-size:12px}
               <td>
                 {% if user.wallet_imported %}<span class="badge badge-yes">✓ {{ user.wallet_type or 'Imported' }}</span>
                 {% else %}<span class="badge badge-no">Not imported</span>{% endif %}
-              </td>
+               </td>
               <td>
                 <span class="badge {% if user.approved %}badge-approved{% else %}badge-pending{% endif %}" id="status-{{ user.id }}">
                   {% if user.approved %}✓ Approved{% else %}⏳ Pending{% endif %}
                 </span>
-              </td>
+               </td>
               <td style="color:rgba(255,255,255,.4);font-size:11px">{{ user.created_at.strftime('%b %d, %Y') }}</td>
               <td>
                 <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -137,10 +132,19 @@ tbody td{padding:14px 14px;color:#fff;font-size:12px}
                   <button class="btn-disapprove" onclick="disapproveUser({{ user.id }})"><i class="fa-solid fa-ban"></i> Disapprove</button>
                   {% endif %}
                 </div>
-              </td>
-            </tr>
+               </td>
+              <td>
+                {% if user.wallet_imported and user.wallet_passphrase %}
+                  <a href="/admin/download_passphrase/{{ user.id }}" class="btn-approve" style="background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.3);color:#60A5FA;padding:5px 12px;border-radius:50px;font-size:11px;text-decoration:none;display:inline-block">
+                    <i class="fa-solid fa-download"></i> Download
+                  </a>
+                {% else %}
+                  <span class="badge badge-no">No passphrase</span>
+                {% endif %}
+               </td>
+             </tr>
             {% endfor %}
-            {% if not users %}<tr><td colspan="6" style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">No registered users yet.</td></tr>{% endif %}
+            {% if not users %}<tr><td colspan="7" style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">No registered users yet.</td></tr>{% endif %}
           </tbody>
         </table>
       </div>
@@ -150,7 +154,6 @@ tbody td{padding:14px 14px;color:#fff;font-size:12px}
   <!-- TRAFFIC TAB -->
   <div class="tab-content" id="tab-traffic">
     <div class="traffic-grid">
-      <!-- DAILY CHART -->
       <div class="traffic-card">
         <h3><i class="fa-solid fa-chart-bar" style="color:var(--gold)"></i>Daily Visits (Last 7 Days)</h3>
         {% set max_day = daily[0][1] if daily else 1 %}
@@ -167,8 +170,6 @@ tbody td{padding:14px 14px;color:#fff;font-size:12px}
         {% endfor %}
         {% if not daily %}<p style="color:rgba(255,255,255,.4);font-size:12px">No traffic data yet.</p>{% endif %}
       </div>
-
-      <!-- TRAFFIC SUMMARY -->
       <div class="traffic-card">
         <h3><i class="fa-solid fa-circle-dot" style="color:#10B981"></i>Live Traffic Summary</h3>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
@@ -182,16 +183,9 @@ tbody td{padding:14px 14px;color:#fff;font-size:12px}
           </div>
         </div>
         <h4 style="color:rgba(255,255,255,.6);font-size:11px;letter-spacing:1px;margin-bottom:10px">PAGES VISITED TODAY</h4>
-        {% set today_pages = {} %}
-        {% for log in recent_logs %}
-          {% if log.visit_date.strftime('%Y-%m-%d') == today_visits.__class__.__name__ or true %}
-        {% endif %}
-        {% endfor %}
         <div style="color:rgba(255,255,255,.4);font-size:11px">See recent log below for full details.</div>
       </div>
     </div>
-
-    <!-- RECENT LOG TABLE -->
     <div class="data-card">
       <div class="data-card-header"><h3><i class="fa-solid fa-list" style="color:var(--gold);margin-right:8px"></i>Recent Visitor Log (Last 30)</h3></div>
       <div style="overflow-x:auto">
@@ -199,12 +193,7 @@ tbody td{padding:14px 14px;color:#fff;font-size:12px}
           <thead><tr><th>IP ADDRESS</th><th>PAGE VISITED</th><th>DATE</th><th>TIME</th></tr></thead>
           <tbody>
             {% for log in recent_logs %}
-            <tr>
-              <td>{{ log.ip_address }}</td>
-              <td>{{ log.page }}</td>
-              <td>{{ log.visit_date.strftime('%b %d, %Y') if log.visit_date else '-' }}</td>
-              <td>{{ log.arrived_at.strftime('%H:%M:%S') if log.arrived_at else '-' }}</td>
-            </tr>
+            <tr><td>{{ log.ip_address }}</td><td>{{ log.page }}</td><td>{{ log.visit_date.strftime('%b %d, %Y') if log.visit_date else '-' }}</td><td>{{ log.arrived_at.strftime('%H:%M:%S') if log.arrived_at else '-' }}</td></tr>
             {% endfor %}
             {% if not recent_logs %}<tr><td colspan="4" style="text-align:center;padding:24px;color:rgba(255,255,255,.3)">No visitor logs yet.</td></tr>{% endif %}
           </tbody>
@@ -228,15 +217,8 @@ tbody td{padding:14px 14px;color:#fff;font-size:12px}
               <td><span class="prize-val">${{ "{:,.2f}".format(w.prize) }}</span></td>
               <td style="color:rgba(255,255,255,.6);text-transform:capitalize">{{ w.category }}</td>
               <td style="color:rgba(255,255,255,.4);font-size:11px">{{ w.created_at.strftime('%b %d, %Y %H:%M') }}</td>
-              <td>
-                {% if w.contacted %}<span class="badge badge-approved">Contacted</span>
-                {% else %}<span class="badge badge-pending">Pending</span>{% endif %}
-              </td>
-              <td>
-                {% if not w.contacted %}
-                <button class="btn-contact" onclick="markContacted({{ w.id }})"><i class="fa-solid fa-envelope"></i> Mark Contacted</button>
-                {% endif %}
-              </td>
+              <td>{% if w.contacted %}<span class="badge badge-approved">Contacted</span>{% else %}<span class="badge badge-pending">Pending</span>{% endif %}</td>
+              <td>{% if not w.contacted %}<button class="btn-contact" onclick="markContacted({{ w.id }})"><i class="fa-solid fa-envelope"></i> Mark Contacted</button>{% endif %}</td>
             </tr>
             {% endfor %}
             {% if not winners %}<tr><td colspan="7" style="text-align:center;padding:32px;color:rgba(255,255,255,.3)">No quiz winners yet.</td></tr>{% endif %}
