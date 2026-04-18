@@ -225,55 +225,55 @@ def admin_logout():
     session.pop('admin', None)
     return redirect(url_for('home'))
 
-# ── MISSING ROUTES ADDED (with correct template names) ─────────────────
+# ==================== MISSING PAGE ROUTES ====================
+# These match exactly what your frontend links request
+
 @app.route('/quiz')
-def quiz():
+def quiz_page():
     return render_template('quiz.html')
 
 @app.route('/faqs')
-def faqs():
+def faqs_page():
     return render_template('faqs.html')
 
-@app.route('/law-regulation')
-def law_regulation():
-    return render_template('law.html')
-
-@app.route('/support')
-def support():
-    return render_template('support.html')
-
-@app.route('/contact')
-def contact():
-    return render_template('contact.html')
-
-@app.route('/terms')
-def terms():
-    return render_template('terms.html')
-
-@app.route('/privacy')
-def privacy():
-    return render_template('privacy.html')
-
-# ── EXACT ROUTES FOR THE FOOTER LINKS (as you named the files) ─────────
-@app.route('/law.html')
+# Law & Regulation – frontend likely uses /law (without .html)
+@app.route('/law')
 def law_page():
     return render_template('law.html')
 
-@app.route('/help_center.html')
-def help_center():
+# Also keep /law-regulation if any link uses that
+@app.route('/law-regulation')
+def law_regulation_page():
+    return render_template('law.html')
+
+# Help Center
+@app.route('/help-center')
+def help_center_page():
     return render_template('help_center.html')
 
-@app.route('/privacy_policy.html')
-def privacy_policy():
-    return render_template('privacy_policy.html')
+# Contact Us
+@app.route('/contact-us')
+def contact_us_page():
+    return render_template('contact_us.html')
 
-@app.route('/terms_of_service.html')
-def terms_of_service():
+# Terms of Service
+@app.route('/terms-of-service')
+def terms_of_service_page():
     return render_template('terms_of_service.html')
 
-@app.route('/contact_us.html')
-def contact_us():
-    return render_template('contact_us.html')
+# Privacy Policy
+@app.route('/privacy-policy')
+def privacy_policy_page():
+    return render_template('privacy_policy.html')
+
+# Additional support routes (if any)
+@app.route('/support')
+def support_page():
+    return render_template('support.html')
+
+@app.route('/contact')
+def contact_page():
+    return render_template('contact.html')
 
 # Create all tables when the app starts
 with app.app_context():
