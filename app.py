@@ -225,7 +225,7 @@ def admin_logout():
     session.pop('admin', None)
     return redirect(url_for('home'))
 
-# ── MISSING ROUTES ADDED ────────────────────────────────────────────────
+# ── MISSING ROUTES ADDED (with correct template names) ─────────────────
 @app.route('/quiz')
 def quiz():
     return render_template('quiz.html')
@@ -254,20 +254,25 @@ def terms():
 def privacy():
     return render_template('privacy.html')
 
-@app.route('/help_centre.html')
-def privacy():
-    return render_template('help_centre.html')
+# ── EXACT ROUTES FOR THE FOOTER LINKS (as you named the files) ─────────
+@app.route('/law.html')
+def law_page():
+    return render_template('law.html')
+
+@app.route('/help_center.html')
+def help_center():
+    return render_template('help_center.html')
 
 @app.route('/privacy_policy.html')
-def privacy():
+def privacy_policy():
     return render_template('privacy_policy.html')
 
 @app.route('/terms_of_service.html')
-def privacy():
+def terms_of_service():
     return render_template('terms_of_service.html')
 
 @app.route('/contact_us.html')
-def privacy():
+def contact_us():
     return render_template('contact_us.html')
 
 # Create all tables when the app starts
