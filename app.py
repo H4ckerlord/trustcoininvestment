@@ -236,7 +236,7 @@ def faqs():
 
 @app.route('/law-regulation')
 def law_regulation():
-    return render_template('law_regulation.html')
+    return render_template('law.html')
 
 @app.route('/support')
 def support():
