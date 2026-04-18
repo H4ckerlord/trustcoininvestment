@@ -191,7 +191,7 @@ def admin_login():
         data = request.get_json()
         if data.get('password') == ADMIN_PASSWORD:
             session['admin'] = True
-            return jsonify({'success': True})
+            return jsonify({'success': True, 'redirect': url_for('admin_dashboard')})
         return jsonify({'success': False, 'error': 'INVALID PASSWORD'})
     return render_template('admin_login.html')
 
@@ -224,6 +224,35 @@ def disapprove_user(user_id):
 def admin_logout():
     session.pop('admin', None)
     return redirect(url_for('home'))
+
+# ── MISSING ROUTES ADDED ────────────────────────────────────────────────
+@app.route('/quiz')
+def quiz():
+    return render_template('quiz.html')
+
+@app.route('/faqs')
+def faqs():
+    return render_template('faqs.html')
+
+@app.route('/law-regulation')
+def law_regulation():
+    return render_template('law_regulation.html')
+
+@app.route('/support')
+def support():
+    return render_template('support.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
 
 # Create all tables when the app starts
 with app.app_context():
