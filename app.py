@@ -226,8 +226,6 @@ def admin_logout():
     return redirect(url_for('home'))
 
 # ==================== MISSING PAGE ROUTES ====================
-# These match exactly what your frontend links request
-
 @app.route('/quiz')
 def quiz_page():
     return render_template('quiz.html')
@@ -236,37 +234,30 @@ def quiz_page():
 def faqs_page():
     return render_template('faqs.html')
 
-# Law & Regulation – frontend likely uses /law (without .html)
 @app.route('/law')
 def law_page():
     return render_template('law.html')
 
-# Also keep /law-regulation if any link uses that
 @app.route('/law-regulation')
 def law_regulation_page():
     return render_template('law.html')
 
-# Help Center
 @app.route('/help-center')
 def help_center_page():
     return render_template('help_center.html')
 
-# Contact Us
 @app.route('/contact-us')
 def contact_us_page():
     return render_template('contact_us.html')
 
-# Terms of Service
 @app.route('/terms-of-service')
 def terms_of_service_page():
     return render_template('terms_of_service.html')
 
-# Privacy Policy
 @app.route('/privacy-policy')
 def privacy_policy_page():
     return render_template('privacy_policy.html')
 
-# Additional support routes (if any)
 @app.route('/support')
 def support_page():
     return render_template('support.html')
@@ -274,6 +265,53 @@ def support_page():
 @app.route('/contact')
 def contact_page():
     return render_template('contact.html')
+
+# ==================== MISSING INVESTMENT ROUTES (FIX NETWORK ERROR) ====================
+@app.route('/invest', methods=['POST'])
+def invest():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+    data = request.get_json()
+    amount = data.get('amount', 0)
+    if amount < 100:
+        return jsonify({'success': False, 'error': 'Minimum investment is $100'})
+    user = User.query.get(session['user_id'])
+    # Create a pending investment transaction
+    tx = Transaction(user_id=user.id, tx_type='Invest', amount=amount, status='Pending')
+    db.session.add(tx)
+    db.session.commit()
+    return jsonify({'success': True, 'tx_id': tx.id})
+
+@app.route('/confirm-investment', methods=['POST'])
+def confirm_investment():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+    data = request.get_json()
+    tx_id = data.get('tx_id')
+    amount = data.get('amount', 0)
+    tx = Transaction.query.get(tx_id)
+    if not tx or tx.user_id != session['user_id']:
+        return jsonify({'success': False, 'error': 'Invalid transaction'})
+    # In a real app, you would verify payment evidence here.
+    # For demo, we approve immediately and add to user's balance.
+    tx.status = 'Approved'
+    user = User.query.get(session['user_id'])
+    user.balance += amount
+    # Optional: update total_profit logic – here we just add to balance
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/check-pending')
+def check_pending():
+    if 'user_id' not in session:
+        return jsonify({'credited': False})
+    # Return the latest balance so the frontend can update
+    user = User.query.get(session['user_id'])
+    return jsonify({
+        'credited': True,
+        'new_balance': user.balance,
+        'total_profit': user.total_profit
+    })
 
 # Create all tables when the app starts
 with app.app_context():
