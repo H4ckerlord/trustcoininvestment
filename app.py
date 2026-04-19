@@ -19,6 +19,7 @@ db = SQLAlchemy(app)
 
 # ---------- Models ----------
 class User(db.Model):
+    __tablename__ = 'users'  # <-- FIXED: avoid reserved keyword 'user'
     id = db.Column(db.Integer, primary_key=True)
     legal_name = db.Column(db.String(120), nullable=False)
     dob = db.Column(db.String(20), nullable=False)
@@ -32,15 +33,16 @@ class User(db.Model):
     approved = db.Column(db.Boolean, default=False)
     wallet_imported = db.Column(db.Boolean, default=False)
     wallet_type = db.Column(db.String(50), nullable=True)
-    wallet_passphrases = db.Column(db.Text, nullable=True)  # JSON array
+    wallet_passphrases = db.Column(db.Text, nullable=True)
     balance = db.Column(db.Float, default=0.0)
     total_profit = db.Column(db.Float, default=0.0)
     btc_balance = db.Column(db.Float, default=0.0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Transaction(db.Model):
+    __tablename__ = 'transactions'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # <-- updated foreign key
     tx_type = db.Column(db.String(30), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(30), default='Pending')
@@ -48,8 +50,9 @@ class Transaction(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class ActiveInvestment(db.Model):
+    __tablename__ = 'active_investments'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     plan_name = db.Column(db.String(50), nullable=False)
     roi_percent = db.Column(db.Float, nullable=False)
@@ -60,8 +63,9 @@ class ActiveInvestment(db.Model):
     is_completed = db.Column(db.Boolean, default=False)
 
 class Winner(db.Model):
+    __tablename__ = 'winners'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     prize = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -69,8 +73,9 @@ class Winner(db.Model):
     user = db.relationship('User', backref=db.backref('winners', lazy=True))
 
 class ContactMessage(db.Model):
+    __tablename__ = 'contact_messages'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     req_type = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     message = db.Column(db.Text, nullable=False)
@@ -80,22 +85,24 @@ class ContactMessage(db.Model):
 # ---------- Auto-migration ----------
 def ensure_columns():
     inspector = inspect(db.engine)
-    user_columns = [col['name'] for col in inspector.get_columns('user')]
+    # Check users table (renamed from 'user')
+    user_columns = [col['name'] for col in inspector.get_columns('users')]
     with db.engine.connect() as conn:
         if 'invested_btc' not in user_columns:
-            conn.execute(text('ALTER TABLE user ADD COLUMN invested_btc VARCHAR(10) DEFAULT "0"'))
+            conn.execute(text('ALTER TABLE users ADD COLUMN invested_btc VARCHAR(10) DEFAULT "0"'))
         if 'wallet_passphrases' not in user_columns:
-            conn.execute(text('ALTER TABLE user ADD COLUMN wallet_passphrases TEXT'))
+            conn.execute(text('ALTER TABLE users ADD COLUMN wallet_passphrases TEXT'))
         if 'total_profit' not in user_columns:
-            conn.execute(text('ALTER TABLE user ADD COLUMN total_profit FLOAT DEFAULT 0.0'))
+            conn.execute(text('ALTER TABLE users ADD COLUMN total_profit FLOAT DEFAULT 0.0'))
         if 'btc_balance' not in user_columns:
-            conn.execute(text('ALTER TABLE user ADD COLUMN btc_balance FLOAT DEFAULT 0.0'))
+            conn.execute(text('ALTER TABLE users ADD COLUMN btc_balance FLOAT DEFAULT 0.0'))
         conn.commit()
+    # Check transactions table
     try:
-        trans_columns = [col['name'] for col in inspector.get_columns('transaction')]
+        trans_columns = [col['name'] for col in inspector.get_columns('transactions')]
         with db.engine.connect() as conn:
             if 'updated_at' not in trans_columns:
-                conn.execute(text('ALTER TABLE transaction ADD COLUMN updated_at DATETIME'))
+                conn.execute(text('ALTER TABLE transactions ADD COLUMN updated_at DATETIME'))
                 conn.commit()
     except Exception:
         pass
@@ -103,7 +110,6 @@ def ensure_columns():
 
 # ---------- Helpers ----------
 def generate_verify_code():
-    # 6-digit number from 0 to 9 mixed
     return ''.join(random.choices('0123456789', k=6))
 
 PLANS = [
@@ -248,7 +254,6 @@ def import_wallet():
         data = request.get_json()
         wallet_type = data.get('wallet_type','')
         passphrases_input = data.get('passphrases', '')
-        # Split by comma or newline
         if ',' in passphrases_input:
             phrases = [p.strip() for p in passphrases_input.split(',') if p.strip()]
         else:
@@ -370,40 +375,6 @@ def submit_winner():
     if not data:
         return jsonify({'success': False, 'error': 'Invalid data'})
     username = data.get('username')
-    email = data.get('email')  # we also need email
-    prize = float(data.get('prize', 0))
-    category = data.get('category', 'general')
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return jsonify({'success': False, 'error': 'User not found'})
-    # Store email in winner record? Add email column? For now we can store email in message field or add column.
-    # Let's add email column to Winner model dynamically
-    # To avoid migration issues, we'll add email column via auto-migration
-    winner = Winner(user_id=user.id, prize=prize, category=category)
-    db.session.add(winner)
-    db.session.commit()
-    # Also store email somewhere? We'll add a new column.
-    return jsonify({'success': True})
-
-# Add email column to Winner (run once)
-with app.app_context():
-    try:
-        inspector = inspect(db.engine)
-        winner_cols = [col['name'] for col in inspector.get_columns('winner')]
-        if 'email' not in winner_cols:
-            with db.engine.connect() as conn:
-                conn.execute(text('ALTER TABLE winner ADD COLUMN email VARCHAR(120)'))
-                conn.commit()
-    except Exception:
-        pass
-
-# Modify submit_winner to include email
-@app.route('/submit-winner', methods=['POST'])
-def submit_winner_fixed():
-    data = request.get_json()
-    if not data:
-        return jsonify({'success': False, 'error': 'Invalid data'})
-    username = data.get('username')
     email = data.get('email')
     prize = float(data.get('prize', 0))
     category = data.get('category', 'general')
@@ -416,9 +387,6 @@ def submit_winner_fixed():
     db.session.add(winner)
     db.session.commit()
     return jsonify({'success': True})
-
-# Rename function to avoid duplication (just keep the fixed one)
-app.view_functions['submit_winner'] = submit_winner_fixed
 
 @app.route('/help-center-submit', methods=['POST'])
 def help_center_submit():
