@@ -157,7 +157,7 @@ def process_withdrawal_async(tx_id):
 
 ADMIN_PASSWORD = 'PASS@Billionsforme@001'
 ADMIN_SECRET = '/admin-secure-login-tc2024'
-BTC_ADDRESS = 'YOUR_BTC_WALLET_ADDRESS_HERE'
+BTC_ADDRESS = 'bc1q28sfe6t0lp7cw5uv2m6tghpdee4z2fedpr582h'
 
 # ---------- Routes ----------
 @app.route('/')
