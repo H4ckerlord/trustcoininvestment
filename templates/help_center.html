@@ -68,11 +68,17 @@ function submitHelp(){
   const err=document.getElementById('errBox');
   const succ=document.getElementById('succBox');
   if(!email||!topic||!msg){showError(err,'Please fill in all fields!');return;}
-  fetch('/help-center',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,message:'Topic: '+topic+'\n\n'+msg})})
+  fetch('/help-center-submit',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:email,message:'Topic: '+topic+'\n\n'+msg})
+  })
   .then(r=>r.json()).then(res=>{
     if(res.success){
       document.getElementById('helpForm').style.display='none';
       showSuccess(succ,'✅ Your request has been submitted! Our team will respond to '+email+' within 24 working hours.');
+    } else {
+      showError(err,'Submission failed. Please try again.');
     }
   });
 }

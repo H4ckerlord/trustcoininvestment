@@ -10,14 +10,12 @@ body{background:linear-gradient(135deg,#1a0533 0%,#2d1b69 50%,#11998e 100%);min-
 .quiz-icon{width:64px;height:64px;background:linear-gradient(135deg,#F59E0B,#EF4444);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 8px 24px rgba(245,158,11,.4);font-size:28px}
 .quiz-header h2{font-size:20px;font-weight:800}
 .quiz-header p{color:var(--gray);font-size:12px;margin-top:6px;line-height:1.6}
-/* CATEGORY CARDS */
 .cat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:20px 0}
 .cat-card{border:2px solid #E5E7EB;border-radius:14px;padding:20px 12px;text-align:center;cursor:pointer;transition:all .3s}
 .cat-card:hover{border-color:var(--blue);transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,71,171,.12)}
 .cat-card.selected{border-color:var(--blue);background:#EFF6FF;box-shadow:0 0 0 3px rgba(0,71,171,.15)}
 .cat-icon{font-size:32px;margin-bottom:8px}
 .cat-name{font-weight:800;font-size:13px}
-/* QUESTION */
 .question-box{background:linear-gradient(135deg,var(--blue-dark),var(--blue));border-radius:14px;padding:20px;color:#fff;margin:16px 0}
 .q-category{font-size:10px;opacity:.7;letter-spacing:1px;margin-bottom:8px}
 .q-text{font-size:15px;font-weight:700;line-height:1.5}
@@ -26,15 +24,12 @@ body{background:linear-gradient(135deg,#1a0533 0%,#2d1b69 50%,#11998e 100%);min-
 .opt-btn:hover{border-color:var(--blue);background:#EFF6FF}
 .opt-btn.correct{border-color:#10B981;background:#D1FAE5;color:#065F46}
 .opt-btn.wrong{border-color:#EF4444;background:#FEE2E2;color:#DC2626}
-/* WIN SCREEN */
 .win-screen{text-align:center;padding:20px 0}
 .confetti-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px}
 .prize-box{background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:3px solid #F59E0B;border-radius:16px;padding:24px;margin:16px 0}
 .prize-amount{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:#92400E}
 .prize-label{font-size:13px;color:#92400E;margin-top:4px}
-/* WRONG */
 .wrong-screen{text-align:center;padding:20px 0}
-/* CLAIM FORM */
 .claim-form{margin-top:16px}
 </style>
 {% endblock %}
@@ -223,7 +218,6 @@ function checkAnswer(idx,btn){
 }
 
 function generatePrize(){
-  // Random prize between $2,760 and $1,000,000
   const prizes=[2760,3500,5000,7500,10000,15000,25000,50000,75000,100000,150000,250000,500000,750000,1000000];
   return prizes[Math.floor(Math.random()*prizes.length)];
 }
@@ -238,12 +232,18 @@ function submitClaim(){
   const err=document.getElementById('claimErr');
   const succ=document.getElementById('claimSuccess');
   if(!username||!email){showError(err,'Please fill in all fields!');return;}
-  fetch('/quiz/submit-winner',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:username,email:email,prize:currentPrize,category:currentCategory})})
+  fetch('/submit-winner',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:username, prize:currentPrize, category:currentCategory})
+  })
   .then(r=>r.json()).then(res=>{
     if(res.success){
       showSuccess(succ,'✅ Claim submitted! Expect a response from our team within 24 working hours.');
       document.querySelectorAll('.claim-form input').forEach(i=>i.disabled=true);
       document.querySelector('.claim-form .btn-blue').disabled=true;
+    } else {
+      showError(err,'Submission failed. Please try again.');
     }
   });
 }

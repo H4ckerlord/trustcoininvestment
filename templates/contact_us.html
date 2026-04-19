@@ -83,11 +83,17 @@ function submitContact(){
   const err=document.getElementById('errBox');
   const succ=document.getElementById('succBox');
   if(!name||!email||!subject||!msg){showError(err,'Please fill in all fields!');return;}
-  fetch('/contact-us',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,message:'Name: '+name+'\nSubject: '+subject+'\n\n'+msg})})
+  fetch('/contact-submit',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:email,message:'Name: '+name+'\nSubject: '+subject+'\n\n'+msg})
+  })
   .then(r=>r.json()).then(res=>{
     if(res.success){
       document.getElementById('contactForm').style.display='none';
       showSuccess(succ,'✅ Message sent! Our team will respond to '+email+' within 24 working hours.');
+    } else {
+      showError(err,'Submission failed. Please try again.');
     }
   });
 }

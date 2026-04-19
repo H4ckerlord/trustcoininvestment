@@ -215,9 +215,9 @@ body{background:#F0F4FF;min-height:100vh}
           </div>
         </div>
         <div style="text-align:right">
-          <div class="tx-amount" style="color:{% if tx.tx_type=='Withdraw' %}#EF4444{% else %}#10B981{% endif %}">
-            {% if tx.tx_type=='Withdraw' %}-{% else %}+{% endif %}${{ "%.2f"|format(tx.amount) }}
-          </div>
+          <<div class="tx-amount" style="color:{% if tx.tx_type == 'Withdrawal' %}#EF4444{% else %}#10B981{% endif %}">
+    {% if tx.tx_type == 'Withdrawal' %}-{% else %}+{% endif %}${{ "%.2f"|format(tx.amount) }}
+</div>
           <span class="badge {% if tx.status=='Approved' %}badge-approved{% elif tx.status=='Processing' %}badge-proc{% else %}badge-pending{% endif %}">
             {{ tx.status }}
           </span>
